@@ -14,7 +14,7 @@ import AstroPWA from "@vite-pwa/astro";
 // https://astro.build/config
 export default defineConfig({
   site: SITE.website,
-  output: "static",
+  output: "server",
   adapter: vercel(),
   trailingSlash: "never",
   markdown: {
