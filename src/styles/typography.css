@@ -3,6 +3,7 @@
 @layer base {
   .prose {
     @apply prose-headings:!mb-3 prose-headings:!text-foreground prose-h3:italic prose-p:!text-foreground prose-a:!text-foreground prose-a:!decoration-dashed prose-a:underline-offset-8 hover:prose-a:text-accent prose-blockquote:!border-l-accent/50 prose-blockquote:opacity-80 prose-figcaption:!text-foreground prose-figcaption:opacity-70 prose-strong:!text-foreground prose-code:rounded prose-code:bg-muted/75 prose-code:p-1 prose-code:!text-foreground prose-code:before:!content-none prose-code:after:!content-none prose-ol:!text-foreground prose-ul:overflow-x-clip prose-ul:!text-foreground prose-li:marker:!text-accent prose-table:text-foreground prose-th:border prose-th:border-border prose-td:border prose-td:border-border prose-img:mx-auto prose-img:!my-2 prose-img:border-2 prose-img:border-border prose-hr:!border-border;
+    font-family: var(--font-body);
   }
   .prose a {
     @apply break-words hover:!text-accent;
@@ -28,6 +29,7 @@
   /* ===== Code Blocks & Syntax Highlighting ===== */
   pre:has(code) {
     @apply border border-border;
+    font-family: var(--font-mono);
   }
 
   .prose code,
@@ -36,28 +38,11 @@
   }
 
   .prose table code {
-    /* add line breaks whenever necessary for codes under table */
     @apply break-all sm:break-normal;
   }
 
   pre > code {
     white-space: pre;
-  }
-
-  /* Light mode syntax highlighting contrast improvements */
-  html[data-theme="light"] pre:has(code),
-  html[data-theme="light"] pre:has(code) span,
-  :root pre:has(code),
-  :root pre:has(code) span {
-    /* Darken comment colors by ~30% total for better contrast */
-    --shiki-color-comment: #495057;
-    --shiki-token-comment: #495057;
-  }
-
-  /* Override inline styles for comments in light mode */
-  html[data-theme="light"] pre code span[style*="color:#6C757D"],
-  :root pre code span[style*="color:#6C757D"] {
-    color: #495057 !important;
   }
 
   /* Apply Dark Theme (if multi-theme specified) */
@@ -68,5 +53,12 @@
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+
+  /* Light mode syntax highlighting */
+  html[data-theme="light"] pre:has(code),
+  html[data-theme="light"] pre:has(code) span {
+    --shiki-color-comment: #495057;
+    --shiki-token-comment: #495057;
   }
 }

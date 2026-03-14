@@ -31,81 +31,63 @@ export default defineConfig({
     mdx(),
 	    sitemap({
 	      filter: (page) => {
-	        // Always exclude archives if not showing them
 	        if (!SITE.showArchives && page.endsWith("/archives")) return false;
-        
-        // Optionally exclude tag pages to reduce sitemap bloat
-        // Uncomment the following line to exclude all tag pages:
-        // if (page.includes("/tags/")) return false;
-        
         return true;
       },
 	      serialize: (item) => {
-	        // Remove trailing slash from URL if present (except for root)
 	        if (item.url.endsWith('/') && item.url !== SITE.website + '/') {
 	          item.url = item.url.slice(0, -1);
 	        }
-	        
+
 	        const url = item.url;
-	        
-	        // Set defaults
+
 	        item.changefreq = ChangeFreqEnum.MONTHLY;
 	        item.priority = 0.5;
-	        
-	        // Homepage - highest priority, frequent updates
+
 	        if (url === SITE.website || url === SITE.website + '/') {
 	          item.priority = 1.0;
 	          item.changefreq = ChangeFreqEnum.DAILY;
 	          item.lastmod = new Date().toISOString();
 	        }
-	        // Main section pages
-	        else if (url.endsWith('/posts') || url.endsWith('/about') || url.endsWith('/search')) {
+	        else if (url.endsWith('/posts') || url.endsWith('/about') || url.endsWith('/search') || url.endsWith('/services') || url.endsWith('/contact')) {
 	          item.priority = 0.9;
 	          item.changefreq = ChangeFreqEnum.WEEKLY;
 	        }
-	        // Recent blog posts (2024-2025)
-	        else if (url.includes('/posts/2025') || url.includes('/posts/2024')) {
+	        else if (url.includes('/posts/2025') || url.includes('/posts/2024') || url.includes('/posts/2026')) {
 	          item.priority = 0.8;
 	          item.changefreq = ChangeFreqEnum.WEEKLY;
 	        }
-	        // Somewhat recent posts (2020-2023)
-	        else if (url.includes('/posts/2023') || url.includes('/posts/2022') || 
+	        else if (url.includes('/posts/2023') || url.includes('/posts/2022') ||
 	                 url.includes('/posts/2021') || url.includes('/posts/2020')) {
 	          item.priority = 0.6;
 	          item.changefreq = ChangeFreqEnum.MONTHLY;
 	        }
-	        // Older posts (2010-2019)
 	        else if (url.includes('/posts/201')) {
 	          item.priority = 0.4;
 	          item.changefreq = ChangeFreqEnum.YEARLY;
 	        }
-	        // Tag pages - low priority
 	        else if (url.includes('/tags/')) {
 	          item.priority = 0.1;
 	          item.changefreq = ChangeFreqEnum.YEARLY;
 	        }
-	        // Pagination pages
 	        else if (url.match(/\/page\/\d+$/)) {
 	          item.priority = 0.4;
 	          item.changefreq = ChangeFreqEnum.WEEKLY;
 	        }
-	        
-	        // Note: lastmod dates for individual posts would need to be set
-	        // from the actual post data, which requires more complex integration
-        
+
         return item;
       }
     }),
     react(),
     AstroPWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "peter-avatar.jpg"],
+      includeAssets: ["favicon.ico", "daz.jpg"],
       manifest: {
-        name: "Peter Steinberger",
-        short_name: "steipete",
-        description: "AI-powered tools from Swift roots to web frontiers. Everything I build is open source.",
-        theme_color: "#006cac",
-        background_color: "#fdfdfd",
+        name: "Darryl Munro",
+        short_name: "darrylmunro",
+        description: SITE.desc,
+        theme_color: "#191918",
+        background_color: "#191918",
         display: "standalone",
         orientation: "portrait",
         scope: "/",
@@ -117,13 +99,13 @@ export default defineConfig({
             type: "image/x-icon",
           },
           {
-            src: "peter-avatar.jpg",
+            src: "daz.jpg",
             sizes: "192x192",
             type: "image/jpeg",
             purpose: "any",
           },
           {
-            src: "peter-avatar.jpg",
+            src: "daz.jpg",
             sizes: "512x512",
             type: "image/jpeg",
             purpose: "any maskable",
@@ -141,7 +123,7 @@ export default defineConfig({
               cacheName: "google-fonts-cache",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365,
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -155,7 +137,7 @@ export default defineConfig({
               cacheName: "images-cache",
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30,
               },
             },
           },

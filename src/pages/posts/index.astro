@@ -1,81 +1,134 @@
 ---
-import { getCollection } from "astro:content";
-import Card from "@/components/Card.astro";
 import Footer from "@/components/Footer.astro";
 import Header from "@/components/Header.astro";
 import { SITE } from "@/consts";
 import Layout from "@/layouts/Layout.astro";
-import getPostsByGroupCondition from "@/utils/getPostsByGroupCondition";
+import { getAllPosts, type UnifiedPost } from "@/utils/getAllPosts";
 
-const posts = await getCollection("blog", ({ data }) => !data.draft);
+const allPosts = await getAllPosts();
 
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
+
+// Pre-group posts by year then month
+interface MonthGroup {
+  month: number;
+  posts: UnifiedPost[];
+}
+interface YearGroup {
+  year: number;
+  posts: UnifiedPost[];
+  months: MonthGroup[];
+}
+
+const yearMap = new Map<number, UnifiedPost[]>();
+for (const post of allPosts) {
+  const year = post.pubDatetime.getFullYear();
+  if (!yearMap.has(year)) yearMap.set(year, []);
+  yearMap.get(year)!.push(post);
+}
+
+const yearGroups: YearGroup[] = [...yearMap.entries()]
+  .sort(([a], [b]) => b - a)
+  .map(([year, posts]) => {
+    const monthMap = new Map<number, UnifiedPost[]>();
+    for (const post of posts) {
+      const m = post.pubDatetime.getMonth() + 1;
+      if (!monthMap.has(m)) monthMap.set(m, []);
+      monthMap.get(m)!.push(post);
+    }
+    const months = [...monthMap.entries()]
+      .sort(([a], [b]) => b - a)
+      .map(([month, posts]) => ({ month, posts }));
+    return { year, posts, months };
+  });
 ---
 
-<Layout title={`Posts | ${SITE.title}`} description="Archive of all blog posts by Peter Steinberger. iOS, Swift, web development, and open source insights.">
+<Layout title={`Writing | ${SITE.title}`} description="Writing on enterprise architecture, AI, digital leadership, neurodiversity, and pragmatic technology.">
   <Header />
-  <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-4">
-    <h1 class="text-2xl font-semibold sm:text-3xl mt-8">All Posts</h1>
-    <p class="mt-2 mb-6 italic">Browse all blog posts by year and month</p>
-    {
-      Object.entries(
-        getPostsByGroupCondition(posts, (post) => {
-          const pubDate = post.data.pubDatetime || new Date();
-          return new Date(pubDate).getFullYear();
-        }),
-      )
-        .sort(([yearA], [yearB]) => Number(yearB) - Number(yearA))
-        .map(([year, yearGroup]) => (
-          <div class="mb-8">
-            <h2 class="text-2xl font-bold mb-6 border-b border-accent pb-2">
-              {year}
-              <sup class="text-sm ml-1">{yearGroup.length}</sup>
-            </h2>
-            {Object.entries(
-              getPostsByGroupCondition(yearGroup, (post) => {
-                const pubDate = post.data.pubDatetime || new Date();
-                return new Date(pubDate).getMonth() + 1;
-              }),
-            )
-              .sort(([monthA], [monthB]) => Number(monthB) - Number(monthA))
-              .map(([month, monthGroup]) => (
-                <div class="mt-8">
-                  <h3 class="text-xl font-bold mb-4">
-                    {months[Number(month) - 1]}
-                    <sup class="text-sm ml-1">{monthGroup.length}</sup>
-                  </h3>
-                  <ul>
-                    {monthGroup
-                      .sort((a, b) => {
-                        const aDate = a.data.pubDatetime || new Date();
-                        const bDate = b.data.pubDatetime || new Date();
-                        return (
-                          Math.floor(new Date(bDate).getTime() / 1000) -
-                          Math.floor(new Date(aDate).getTime() / 1000)
-                        );
-                      })
-                      .map((data) => (
-                        <Card {...data} />
-                      ))}
-                  </ul>
-                </div>
-              ))}
-          </div>
-        ))
-    }
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <section class="pt-22 pb-10 relative" style="border: none;">
+        <div class="absolute left-0 top-20 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          Archive
+          <span class="block w-8 h-px bg-accent-dim"></span>
+        </div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          All Writing
+        </h1>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px]">
+          Posts from this site and <a href="https://darrylmunro.substack.com" class="text-accent hover:underline" target="_blank" rel="noopener noreferrer">Substack</a>, in chronological order.
+        </p>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      {yearGroups.map((yg) => (
+        <section class="py-10" style="border: none;">
+          <h2 class="font-[var(--font-head)] text-2xl font-bold mb-6 border-b border-border pb-2 text-foreground">
+            {yg.year}
+            <sup class="text-sm ml-1 text-muted">{yg.posts.length}</sup>
+          </h2>
+          {yg.months.map((mg) => (
+            <div class="mt-8">
+              <h3 class="font-[var(--font-head)] text-xl font-bold mb-4 text-foreground">
+                {monthNames[mg.month - 1]}
+                <sup class="text-sm ml-1 text-muted">{mg.posts.length}</sup>
+              </h3>
+              <ul class="space-y-6">
+                {mg.posts.map((post) => (
+                  <li class="group">
+                    <div class="flex gap-4 items-start">
+                      {post.heroImage && (
+                        <a
+                          href={post.url}
+                          class="flex-shrink-0 hidden sm:block"
+                          {...(post.source === "substack" ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        >
+                          <img
+                            src={post.heroImage}
+                            alt={post.title}
+                            width="140"
+                            height="79"
+                            class="rounded border border-border shadow-sm object-cover w-[140px] h-[79px] transition-all duration-200 group-hover:shadow-md group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        </a>
+                      )}
+                      <div class="flex-1 min-w-0">
+                        <a
+                          href={post.url}
+                          class="inline-block text-lg font-medium text-accent font-[var(--font-head)] decoration-dashed underline-offset-4 hover:underline"
+                          {...(post.source === "substack" ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        >
+                          {post.title}
+                        </a>
+                        <div class="flex items-center gap-3 mb-2">
+                          <span class="text-sm italic text-text-secondary opacity-80">
+                            {post.pubDatetime.getDate()} {monthNames[post.pubDatetime.getMonth()].slice(0, 3)}, {post.pubDatetime.getFullYear()}
+                          </span>
+                          {post.source === "substack" && (
+                            <span class="font-[var(--font-mono)] text-[10px] text-gold tracking-[0.06em] uppercase border border-gold/30 rounded px-1.5 py-0.5">Substack</span>
+                          )}
+                        </div>
+                        {post.description && (
+                          <p class="text-text-secondary opacity-80 text-sm line-clamp-2">{post.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
   </main>
   <Footer />
 </Layout>

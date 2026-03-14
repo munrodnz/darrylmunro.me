@@ -1,4 +1,7 @@
 ---
+// Newsletter form component.
+// Update the form action URL when you set up your own newsletter service
+// (Buttondown, Substack, ConvertKit, etc.)
 export interface Props {
   variant?: "default" | "compact";
 }
@@ -6,55 +9,43 @@ export interface Props {
 const { variant = "default" } = Astro.props;
 ---
 
-<div class={variant === 'default' ? 'newsletter-box bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-6 my-8' : 'newsletter-compact mt-6'}>
+<div class={variant === 'default' ? 'bg-background-raised border border-border rounded-md p-6 my-8' : 'mt-6'}>
   {variant === 'default' && (
-    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-      New posts, shipping stories, and nerdy links straight to your inbox.
+    <p class="text-sm text-text-secondary mb-4">
+      New posts and updates straight to your inbox.
     </p>
   )}
-  
+
   <form
-    action="https://buttondown.com/api/emails/embed-subscribe/steipete"
+    action="#"
     method="post"
     target="_blank"
     class="flex flex-col sm:flex-row gap-3"
   >
-    <input type="hidden" name="tag" value="steipete" />
     <input
       type="text"
       name="name"
       placeholder="Your Name"
-      class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+      class="flex-1 px-4 py-2 border border-border rounded bg-background text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
     />
     <input
       type="email"
       name="email"
       placeholder="Your Email"
       required
-      class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+      class="flex-1 px-4 py-2 border border-border rounded bg-background text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
     />
     <button
       type="submit"
-      class="px-6 py-2 bg-accent rounded-md hover:bg-accent/90 transition-colors font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
-      style="color: white;"
+      class="px-6 py-2 bg-accent text-[#0e1a0e] rounded font-semibold hover:brightness-110 transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
     >
       Subscribe
     </button>
   </form>
-  
+
   {variant === 'default' && (
-    <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-      2× per month, pure signal, zero fluff.
+    <p class="text-xs text-muted mt-3">
+      No spam. Unsubscribe anytime.
     </p>
   )}
 </div>
-
-<style>
-  @media (max-width: 640px) {
-    .newsletter-box {
-      margin-left: -1rem;
-      margin-right: -1rem;
-      border-radius: 0;
-    }
-  }
-</style>

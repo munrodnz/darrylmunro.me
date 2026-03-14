@@ -3,47 +3,88 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-/* Font definitions */
+/* ── FONTS ─────────────────────────────────────────────────── */
 @font-face {
-  font-family: "Atkinson";
-  src: url("/fonts/atkinson-regular.woff") format("woff");
-  font-weight: 400;
+  font-family: "Outfit";
+  src: url("https://fonts.gstatic.com/s/outfit/v11/QGYyz_MVcBeNP4NjuGObqx1XmO1I4TC1C4G-EiAou6Y.woff2") format("woff2");
+  font-weight: 300 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Atkinson";
-  src: url("/fonts/atkinson-bold.woff") format("woff");
-  font-weight: 700;
+  font-family: "Source Sans 3";
+  src: url("https://fonts.gstatic.com/s/sourcesans3/v15/nwpBtKy2OAdR1K-IwhWudF-R9QMylBJAV3Bo8Ky462EM.woff2") format("woff2");
+  font-weight: 300 600;
   font-style: normal;
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("https://fonts.gstatic.com/s/sourcesans3/v15/nwpDtKy2OAdR1K-IwhWudF-R3woAa8opPOrG97lwqDlO9C4Ym4Q.woff2") format("woff2");
+  font-weight: 300 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPVmUsaaDhw.woff2") format("woff2");
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── DESIGN TOKENS — DARK (DEFAULT) ────────────────────────── */
 :root,
-html[data-theme="light"] {
-  --background: #fdfdfd;
-  --foreground: #282728;
-  --accent: #006cac;
-  --muted: #e6e6e6;
-  --border: #ece9e9;
+html[data-theme="dark"] {
+  --background:       #191918;
+  --background-raised:#222220;
+  --foreground:       #f0ece4;
+  --accent:           #7eb87e;
+  --accent-dim:       #4d7a4d;
+  --gold:             #c4873a;
+  --gold-dim:         #8a5e28;
+  --muted:            #6b6560;
+  --border:           #2e2e2b;
+  --text-secondary:   #a89f94;
+
+  --font-head: 'Outfit', sans-serif;
+  --font-body: 'Source Sans 3', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-html[data-theme="dark"] {
-  --background: #212737;
-  --foreground: #eaedf3;
-  --accent: #ff6b01;
-  --muted: #343f60bf;
-  --border: #ab4b08;
+/* ── DESIGN TOKENS — LIGHT ─────────────────────────────────── */
+html[data-theme="light"] {
+  --background:       #f5f2ed;
+  --background-raised:#ffffff;
+  --foreground:       #1a1918;
+  --accent:           #4d8a4d;
+  --accent-dim:       #3a6b3a;
+  --gold:             #b07830;
+  --gold-dim:         #8a5e28;
+  --muted:            #9a9490;
+  --border:           #ddd8d0;
+  --text-secondary:   #5c5650;
 }
 
 @theme {
   --color-*: initial;
   --color-background: var(--background);
+  --color-background-raised: var(--background-raised);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-text-secondary: var(--text-secondary);
+
+  --font-head: var(--font-head);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 @layer base {
@@ -52,47 +93,42 @@ html[data-theme="dark"] {
     scrollbar-width: auto;
     scrollbar-color: var(--color-muted) transparent;
   }
-  
-  /* View Transitions API for smooth theme switching (Safari 18+, Chrome 111+) */
+
+  /* View Transitions API for smooth theme switching */
   :root {
     view-transition-name: root;
   }
-  
-  /* Apply to html element as well for better compatibility */
   html {
     view-transition-name: root;
   }
-  
-  /* Ensure smooth transition between light and dark themes */
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation-duration: 0.25s;
   }
-  
-  /* Customize the transition style */
   ::view-transition-old(root) {
     animation: fade-out 0.25s ease-out;
   }
-  
   ::view-transition-new(root) {
     animation: fade-in 0.25s ease-out;
   }
-  
   @keyframes fade-out {
     from { opacity: 1; }
     to { opacity: 0; }
   }
-  
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  
+
   html {
     @apply overflow-y-scroll scroll-smooth;
   }
   body {
-    @apply flex min-h-svh flex-col bg-background font-mono text-foreground selection:bg-accent/75 selection:text-background;
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    @apply flex min-h-svh flex-col bg-background text-foreground selection:bg-accent/75 selection:text-background;
   }
   a,
   button {
@@ -104,10 +140,49 @@ html[data-theme="dark"] {
   }
   section,
   footer {
-    @apply mx-auto max-w-3xl px-4;
+    @apply mx-auto max-w-[740px] px-6;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-head);
+  }
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
   }
 }
 
+/* ── NOISE TEXTURE OVERLAY ──────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+}
+
+/* ── ACTIVE NAV ────────────────────────────────────────────── */
 .active-nav {
-  @apply underline decoration-wavy decoration-2 underline-offset-4;
+  color: var(--foreground) !important;
+  position: relative;
+}
+.active-nav::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* ── ANIMATIONS ────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

@@ -6,17 +6,15 @@ import { SITE } from "@/config";
 import Layout from "@/layouts/Layout.astro";
 ---
 
-<Layout title={`404 Not Found | ${SITE.title}`} description="Page not found. The requested page doesn't exist on Peter Steinberger's blog.">
+<Layout title={`404 Not Found | ${SITE.title}`} description="Page not found.">
   <Header />
-
   <main
     id="main-content"
-    class="mx-auto flex max-w-3xl flex-1 items-center justify-center"
+    class="mx-auto flex max-w-[740px] flex-1 items-center justify-center px-6 relative z-1"
   >
     <div class="mb-14 flex flex-col items-center justify-center">
-      <h1 class="text-9xl font-bold text-accent">404</h1>
-      <span aria-hidden="true">¯\_(ツ)_/¯</span>
-      <p class="mt-4 text-2xl sm:text-3xl">Page Not Found</p>
+      <h1 class="text-9xl font-bold text-accent font-[var(--font-head)]">404</h1>
+      <span class="text-muted" aria-hidden="true">Page not found</span>
       <LinkButton
         href="/"
         class="my-6 text-lg underline decoration-dashed underline-offset-8"
@@ -25,6 +23,5 @@ import Layout from "@/layouts/Layout.astro";
       </LinkButton>
     </div>
   </main>
-
   <Footer />
 </Layout>

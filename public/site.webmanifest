@@ -1,7 +1,7 @@
 {
-  "name": "Peter Steinberger",
-  "short_name": "Peter Steinberger",
-  "description": "iOS developer, entrepreneur, founder of PSPDFKit (acquired), vibe coding my next project",
+  "name": "Darryl Munro",
+  "short_name": "Darryl Munro",
+  "description": "Strong opinions, loosely held. Enterprise architecture, AI, neurodiversity, and pragmatic human systems.",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -11,6 +11,6 @@
   ],
   "start_url": "/",
   "display": "browser",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff"
+  "theme_color": "#191918",
+  "background_color": "#191918"
 }

@@ -1,0 +1,219 @@
+---
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout title={`Contact | ${SITE.title}`} description="Get in touch with Darryl Munro. Architecture, AI, neurodiversity, and technology leadership.">
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <section class="pt-22 pb-10 relative">
+        <div class="absolute left-0 top-20 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          Let's talk
+          <span class="block w-8 h-px bg-accent-dim"></span>
+        </div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          Contact
+        </h1>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px]">
+          Whether you're working on something interesting, need architecture guidance, or want to talk about neurodiversity in the workplace — I'd like to hear from you.
+        </p>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <section class="py-12" style="border: none;">
+        <div class="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-10">
+
+          <!-- Contact Form -->
+          <form
+            id="contact-form"
+            class="space-y-6"
+            action="#"
+            method="POST"
+            data-form-endpoint=""
+          >
+            <!-- Name -->
+            <div>
+              <label for="name" class="block font-[var(--font-mono)] text-xs text-muted tracking-[0.08em] uppercase mb-2">Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                class="w-full bg-background-raised border border-border rounded px-4 py-3 text-foreground text-[15px] font-[var(--font-body)] placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+                placeholder="Your name"
+              />
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label for="email" class="block font-[var(--font-mono)] text-xs text-muted tracking-[0.08em] uppercase mb-2">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                class="w-full bg-background-raised border border-border rounded px-4 py-3 text-foreground text-[15px] font-[var(--font-body)] placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+                placeholder="your@email.com"
+              />
+            </div>
+
+            <!-- Subject -->
+            <div>
+              <label for="subject" class="block font-[var(--font-mono)] text-xs text-muted tracking-[0.08em] uppercase mb-2">Subject</label>
+              <select
+                id="subject"
+                name="subject"
+                class="w-full bg-background-raised border border-border rounded px-4 py-3 text-foreground text-[15px] font-[var(--font-body)] focus:outline-none focus:border-accent transition-colors"
+              >
+                <option value="general">General enquiry</option>
+                <option value="fractional-cto">Fractional CTO / CIO</option>
+                <option value="ea-consulting">Enterprise Architecture Consulting</option>
+                <option value="nd-coaching">Neurodiversity Coaching</option>
+                <option value="workplace-nd">Workplace Neurodiversity Programme</option>
+                <option value="speaking">Speaking / Events</option>
+                <option value="other">Something else</option>
+              </select>
+            </div>
+
+            <!-- Message -->
+            <div>
+              <label for="message" class="block font-[var(--font-mono)] text-xs text-muted tracking-[0.08em] uppercase mb-2">Message</label>
+              <textarea
+                id="message"
+                name="message"
+                required
+                rows="5"
+                class="w-full bg-background-raised border border-border rounded px-4 py-3 text-foreground text-[15px] font-[var(--font-body)] placeholder:text-muted focus:outline-none focus:border-accent transition-colors resize-y"
+                placeholder="Tell me what you're working on..."
+              ></textarea>
+            </div>
+
+            <!-- Honeypot (anti-spam) -->
+            <div class="hidden" aria-hidden="true">
+              <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <button
+              type="submit"
+              class="inline-flex items-center gap-[7px] bg-accent text-[#0e1a0e] font-[var(--font-body)] font-semibold text-sm px-6 py-3 rounded transition-all hover:brightness-110 hover:-translate-y-px cursor-pointer"
+            >
+              Send message
+            </button>
+
+            <!-- Success message (hidden by default) -->
+            <div id="form-success" class="hidden bg-background-raised border border-accent rounded p-4">
+              <p class="text-accent font-semibold text-sm">Message sent. I'll get back to you shortly.</p>
+            </div>
+
+            <!-- Error message (hidden by default) -->
+            <div id="form-error" class="hidden bg-background-raised border border-gold rounded p-4">
+              <p class="text-gold font-semibold text-sm">Something went wrong. Please try emailing me directly.</p>
+            </div>
+          </form>
+
+          <!-- Sidebar info -->
+          <div class="space-y-6">
+            <div class="bg-background-raised border border-border rounded-md p-6">
+              <h3 class="font-[var(--font-head)] text-sm font-semibold text-foreground mb-3">Direct contact</h3>
+              <div class="space-y-2 text-sm text-text-secondary">
+                <p>
+                  <a href="mailto:darryl@darrylmunro.nz" class="text-accent hover:underline">darryl@darrylmunro.nz</a>
+                </p>
+                <p>Otepoti / Dunedin, New Zealand</p>
+              </div>
+            </div>
+
+            <div class="bg-background-raised border border-border rounded-md p-6">
+              <h3 class="font-[var(--font-head)] text-sm font-semibold text-foreground mb-3">Find me online</h3>
+              <div class="space-y-2 text-sm">
+                <a href="https://github.com/darrylmunro" class="block text-text-secondary hover:text-accent transition-colors">GitHub</a>
+                <a href="https://linkedin.com/in/darryl-munro" class="block text-text-secondary hover:text-accent transition-colors">LinkedIn</a>
+                <a href="https://x.com/munrod10" class="block text-text-secondary hover:text-accent transition-colors">X / Twitter</a>
+              </div>
+            </div>
+
+            <div class="bg-background-raised border border-border border-l-3 border-l-gold rounded-r-md p-6">
+              <p class="text-text-secondary text-sm leading-relaxed">
+                <strong class="text-foreground">Response time:</strong> I typically reply within 1-2 business days. For urgent matters, email directly.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  // ── CONTACT FORM HANDLER ───────────────────────────────────
+  // To wire this up to a CRM or form service, update the form's
+  // action attribute and/or the fetch URL below.
+  //
+  // Supported services (just set the action/endpoint):
+  //   - Formspree:    https://formspree.io/f/YOUR_ID
+  //   - Getform:      https://getform.io/f/YOUR_ID
+  //   - Basin:        https://usebasin.com/f/YOUR_ID
+  //   - Formspark:    https://submit-form.com/YOUR_ID
+  //   - Netlify Forms: add netlify attribute to form
+  //   - Custom API:   your own endpoint
+  //
+  // Currently: logs to console and shows success message.
+
+  function setupContactForm() {
+    const form = document.querySelector("#contact-form") as HTMLFormElement;
+    const successEl = document.querySelector("#form-success");
+    const errorEl = document.querySelector("#form-error");
+
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const endpoint = form.getAttribute("action") || form.dataset.formEndpoint;
+
+      // If no real endpoint is configured, log the data
+      if (!endpoint || endpoint === "#") {
+        console.log("Contact form submission (no endpoint configured):");
+        console.log(Object.fromEntries(formData));
+        successEl?.classList.remove("hidden");
+        errorEl?.classList.add("hidden");
+        form.reset();
+        return;
+      }
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          body: formData,
+          headers: { Accept: "application/json" },
+        });
+
+        if (response.ok) {
+          successEl?.classList.remove("hidden");
+          errorEl?.classList.add("hidden");
+          form.reset();
+        } else {
+          errorEl?.classList.remove("hidden");
+          successEl?.classList.add("hidden");
+        }
+      } catch {
+        errorEl?.classList.remove("hidden");
+        successEl?.classList.add("hidden");
+      }
+    });
+  }
+
+  setupContactForm();
+  document.addEventListener("astro:after-swap", setupContactForm);
+</script>

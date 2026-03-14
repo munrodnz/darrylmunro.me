@@ -1,116 +1,210 @@
 ---
-import { getCollection } from "astro:content";
-import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
-import IconRss from "@/assets/icons/IconRss.svg";
-import Card from "@/components/Card.astro";
 import Footer from "@/components/Footer.astro";
 import Header from "@/components/Header.astro";
-import Hr from "@/components/Hr.astro";
-import LinkButton from "@/components/LinkButton.astro";
-import Socials from "@/components/Socials.astro";
 import StructuredData from "@/components/StructuredData.astro";
-import { SITE, SOCIALS } from "@/config";
+import { SITE } from "@/config";
 import Layout from "@/layouts/Layout.astro";
-import getSortedPosts from "@/utils/getSortedPosts";
+import { getAllPosts } from "@/utils/getAllPosts";
+import { workCards, nowContent } from "@/data/homepage";
 
-const posts = await getCollection("blog");
-
-const sortedPosts = getSortedPosts(posts);
-const posts2025AndLater = sortedPosts.filter(({ data }) => data.pubDatetime.getFullYear() >= 2025);
-const featuredPosts = posts2025AndLater.filter(({ data }) => data.featured);
-const recentPosts = posts2025AndLater.filter(({ data }) => !data.featured);
+const allPosts = await getAllPosts();
+const recentPosts = allPosts.slice(0, SITE.postPerIndex);
 ---
 
-<Layout description="Peter Steinberger: AI-powered tools from Swift roots to web frontiers. Every commit lands on GitHub for you to fork & remix.">
+<Layout description={SITE.desc}>
   <StructuredData type="WebSite" data={{}} />
   <StructuredData type="Person" data={{}} />
   <Header />
-  <main id="main-content" data-layout="index">
-    <section id="hero" class="pt-6 pb-4">
-      <div class="flex flex-col sm:flex-row items-start gap-4">
-        <a href="/about" class="block mx-auto sm:mx-0 group">
-          <img 
-            src="/peter-avatar.jpg" 
-            alt="Peter Steinberger" 
-            class="w-40 h-40 rounded-full object-cover flex-shrink-0 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl"
-          />
-        </a>
-        <div class="flex-1 text-center sm:text-left">
-          <div class="flex items-center gap-2 justify-center sm:justify-start">
-            <h1 class="my-2 inline-block text-2xl font-bold sm:my-4 sm:text-3xl">
-              Hi, I'm @steipete.
-            </h1>
-            <a
-              target="_blank"
-              href="/rss.xml"
-              class="inline-block"
-              aria-label="rss feed"
-              title="RSS Feed"
-            >
-              <IconRss
-                width={20}
-                height={20}
-                class="scale-125 stroke-accent stroke-3"
-              />
-              <span class="sr-only">RSS Feed</span>
-            </a>
-          </div>
-          <p>
-            AI-powered tools from Swift roots to web frontiers.<br />
-            Every commit lands on GitHub for you to fork & remix.
-          </p>
-          {
-            // only display if at least one social link is enabled
-            SOCIALS.filter((social) => social.active).length > 0 && (
-              <div class="mt-4 flex flex-row items-center justify-center sm:justify-start">
-                <Socials />
-              </div>
-            )
-          }
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <!-- HERO -->
+      <section id="hero" class="pt-22 pb-18 relative border-b-0!" style="border: none;">
+        <!-- Schist texture accent — left edge -->
+        <div class="absolute left-0 top-20 bottom-15 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          Otepoti · Aotearoa
+          <span class="block w-8 h-px bg-accent-dim"></span>
         </div>
-      </div>
-    </section>
 
-    <Hr />
+        <div class="flex items-start gap-6 sm:gap-8 mb-3">
+          <!-- Headshot placeholder -->
+          <a href="/about" class="block flex-shrink-0 group">
+            <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden border-2 border-border bg-background-raised transition-all duration-300 group-hover:scale-105 group-hover:border-accent-dim">
+              <img
+                src="/daz.jpg"
+                alt="Darryl Munro"
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </a>
 
-    {
-      featuredPosts.length > 0 && (
-        <>
-          <section id="featured" class="pt-12 pb-6">
-            <h2 class="text-2xl font-semibold tracking-wide">Featured</h2>
-            <ul>
-              {featuredPosts.map((data) => (
-                <Card variant="h3" {...data} showImage={false} />
-              ))}
-            </ul>
-          </section>
-          {recentPosts.length > 0 && <Hr />}
-        </>
-      )
-    }
+          <div class="flex-1 min-w-0">
+            <h1 class="font-[var(--font-head)] text-[clamp(36px,6vw,52px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-3">
+              Darryl Munro
+            </h1>
+            <p class="font-[var(--font-head)] text-[clamp(18px,3vw,22px)] font-light text-text-secondary tracking-[-0.01em] italic">
+              Strong opinions, <em class="text-accent not-italic font-medium">loosely held.</em>
+            </p>
+            <p class="font-[var(--font-head)] text-[clamp(20px,3.5vw,26px)] font-light tracking-[-0.01em] italic text-gold mt-1">
+              Pragmatic human architecture.
+            </p>
+          </div>
+        </div>
 
-    {
-      recentPosts.length > 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
-          <ul>
-            {recentPosts.map(
-              (data, index) =>
-                index < SITE.postPerIndex && <Card variant="h3" {...data} showImage={false} />,
-            )}
-          </ul>
-        </section>
-      )
-    }
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px] mb-9 mt-6">
+          I work at the intersection of <strong class="text-foreground font-semibold">enterprise architecture</strong> and the humans who actually have to live inside the systems we build.
+          Thirty years in. Still learning faster than ever.
+          I build things, write about what I find, and call out what doesn't work —
+          including my own prior positions.
+        </p>
 
-    <div class="my-8 text-center">
-      <LinkButton href="/posts/">
-        All Posts
-        <IconArrowRight class="inline-block" />
-      </LinkButton>
+        <div class="flex flex-wrap gap-3 items-center">
+          <a href="#work" class="inline-flex items-center gap-[7px] bg-accent text-[#0e1a0e] font-[var(--font-body)] font-semibold text-sm px-5 py-2.5 rounded transition-all hover:brightness-110 hover:-translate-y-px hover:no-underline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            See what I'm building
+          </a>
+          <a href="/posts" class="inline-flex items-center gap-[7px] text-text-secondary font-[var(--font-body)] text-sm px-4 py-2.5 rounded border border-border transition-all hover:text-foreground hover:border-muted hover:no-underline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Read my writing
+          </a>
+          <div class="flex gap-4 items-center ml-2">
+            <a href="https://github.com/darrylmunro" title="GitHub" class="text-muted text-[13px] hover:text-accent hover:no-underline transition-colors">GitHub</a>
+            <a href="https://linkedin.com/in/darryl-munro" title="LinkedIn" class="text-muted text-[13px] hover:text-accent hover:no-underline transition-colors">LinkedIn</a>
+            <a href="https://x.com/munrod10" title="X / Twitter" class="text-muted text-[13px] hover:text-accent hover:no-underline transition-colors">X</a>
+          </div>
+        </div>
+
+        <!-- Bottom border gradient -->
+        <div class="absolute bottom-0 -left-6 -right-6 h-px" style="background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);"></div>
+      </section>
+
+      <!-- WORK -->
+      <section id="work" class="py-16 border-b-0!" style="border: none;">
+        <div class="font-[var(--font-mono)] text-[11px] font-medium text-muted tracking-[0.14em] uppercase mb-8 flex items-center gap-2.5">
+          Things I've built
+          <span class="flex-1 h-px bg-border"></span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {workCards.map((card) => (
+            <div class="group bg-background-raised border border-border rounded-md p-6 transition-all duration-200 hover:border-accent-dim hover:-translate-y-0.5 relative overflow-hidden">
+              <div class="absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style="background: linear-gradient(90deg, var(--accent), var(--gold));"></div>
+              <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-2.5">{card.tag}</div>
+              <h3 class="font-[var(--font-head)] text-[17px] font-semibold text-foreground mb-2 tracking-[-0.01em]">{card.title}</h3>
+              <p class="text-sm text-text-secondary leading-relaxed mb-4">{card.description}</p>
+              <span class="inline-flex items-center gap-1.5 text-xs text-muted font-[var(--font-mono)]">
+                <span class:list={["w-1.5 h-1.5 rounded-full", {
+                  "bg-accent shadow-[0_0_6px_var(--accent-dim)]": card.statusType === "live",
+                  "bg-gold shadow-[0_0_6px_var(--gold-dim)]": card.statusType === "building",
+                }]}></span>
+                {card.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Border between sections -->
+      <div class="border-t border-border"></div>
+
+      <!-- WRITING -->
+      <section id="writing" class="py-16 border-b-0!" style="border: none;">
+        <div class="font-[var(--font-mono)] text-[11px] font-medium text-muted tracking-[0.14em] uppercase mb-8 flex items-center gap-2.5">
+          Recent writing
+          <span class="flex-1 h-px bg-border"></span>
+        </div>
+        <div class="flex flex-col">
+          {recentPosts.map((post) => {
+            const date = new Date(post.pubDatetime);
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const dateStr = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            const isExternal = post.source === "substack";
+            return (
+              <div class="flex justify-between items-baseline gap-4 py-4 border-b border-border last:border-b-0 transition-all hover:pl-1.5">
+                <div class="flex items-baseline gap-2 flex-1 min-w-0">
+                  <a
+                    href={post.url}
+                    class="text-foreground text-base hover:text-accent hover:no-underline truncate"
+                    {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  >
+                    {post.title}
+                  </a>
+                  {isExternal && (
+                    <span class="font-[var(--font-mono)] text-[10px] text-gold tracking-[0.06em] uppercase flex-shrink-0">Substack</span>
+                  )}
+                </div>
+                <span class="font-[var(--font-mono)] text-xs text-muted whitespace-nowrap">{dateStr}</span>
+              </div>
+            );
+          })}
+          <div class="pt-4">
+            <a href="/posts" class="text-accent text-sm hover:underline">All writing &rarr;</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Border between sections -->
+      <div class="border-t border-border"></div>
+
+      <!-- NOW -->
+      <section id="now" class="py-16 border-b-0!" style="border: none;">
+        <div class="font-[var(--font-mono)] text-[11px] font-medium text-muted tracking-[0.14em] uppercase mb-8 flex items-center gap-2.5">
+          Now
+          <span class="flex-1 h-px bg-border"></span>
+        </div>
+        <div class="bg-background-raised border border-border border-l-3 border-l-gold rounded-r-md py-6 px-7">
+          <p class="text-text-secondary text-[15px] leading-[1.7] mb-3">
+            <strong class="text-foreground font-semibold">{nowContent.headline}</strong>{' '}
+            {nowContent.paragraphs[0]}
+          </p>
+          <p class="text-text-secondary text-[15px] leading-[1.7] mb-3">
+            Currently: rebuilding this site, developing QualityFlow for the ANZ food safety market, writing on Substack about digital leadership and neurodiversity, and running <strong class="text-foreground font-semibold">ThinkDifferent</strong> — a workplace neurodiversity community.
+          </p>
+          <p class="text-text-secondary text-[15px] leading-[1.7]">
+            If you're working on something interesting at the intersection of architecture, AI, and people — <a href="/contact" class="text-accent hover:underline">get in touch</a>.
+          </p>
+        </div>
+      </section>
+
+      <!-- Border between sections -->
+      <div class="border-t border-border"></div>
+
+      <!-- ABOUT (brief) -->
+      <section id="about" class="py-16 border-b-0!" style="border: none;">
+        <div class="font-[var(--font-mono)] text-[11px] font-medium text-muted tracking-[0.14em] uppercase mb-8 flex items-center gap-2.5">
+          About
+          <span class="flex-1 h-px bg-border"></span>
+        </div>
+        <p class="text-text-secondary max-w-[580px] mb-4">
+          Thirty years in technology. Started when you had to care about how things worked.
+          Management and Law background. <strong class="text-foreground">AuDHD</strong> — combined autism and ADHD — which turns out to be a feature, not a bug, for the kind of systems thinking this work requires.
+        </p>
+        <p class="text-text-secondary max-w-[580px] mb-4">
+          I've led architecture across complex enterprise estates — ERP, integration platforms, data, AI — and I've watched enough $15M initiatives fail to know that the technology is rarely the actual problem.
+        </p>
+        <p class="text-text-secondary max-w-[580px]">
+          Based in <strong class="text-foreground">Otepoti / Dunedin</strong>. Certified Good Yarns facilitator. Writes nearly weekly on topics around digital leadership and what it's like to think differently in organisations that weren't designed for it.
+        </p>
+      </section>
+
     </div>
   </main>
   <Footer />
 </Layout>
+
+<style>
+  /* Hero section fade-in animations */
+  #hero > * {
+    animation: fadeUp 0.5s ease both;
+  }
+  #hero > *:nth-child(1) { animation-delay: 0.02s; }
+  #hero > *:nth-child(2) { animation-delay: 0.05s; }
+  #hero > *:nth-child(3) { animation-delay: 0.12s; }
+  #hero > *:nth-child(4) { animation-delay: 0.18s; }
+  #hero > *:nth-child(5) { animation-delay: 0.24s; }
+  #hero > *:nth-child(6) { animation-delay: 0.30s; }
+</style>
 
 <script>
   document.addEventListener("astro:page-load", () => {

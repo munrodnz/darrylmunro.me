@@ -1,0 +1,127 @@
+---
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+
+// ── SERVICE OFFERINGS ─────────────────────────────────────────
+// Edit these to update what appears on the Services page.
+const services = [
+  {
+    tag: "Leadership",
+    title: "Fractional CTO / CIO",
+    description:
+      "Strategic technology leadership without the full-time overhead. I embed with your team to set direction, make architecture decisions, and build capability — on a schedule that fits your stage and budget.",
+    points: [
+      "Technology strategy and roadmap development",
+      "Architecture governance and decision-making",
+      "Team structure and capability building",
+      "Vendor and platform evaluation",
+      "Board and executive technology advisory",
+    ],
+  },
+  {
+    tag: "Enterprise Architecture",
+    title: "EA Consulting",
+    description:
+      "Hands-on enterprise architecture consulting across all domains — business, data, application, and technology. I focus on pragmatic outcomes, not 200-page documents nobody reads.",
+    points: [
+      "Business architecture and capability modelling",
+      "Data architecture and governance",
+      "Application portfolio rationalisation",
+      "Integration strategy and API design",
+      "Cloud and infrastructure architecture",
+      "AI and automation strategy",
+    ],
+  },
+  {
+    tag: "Neurodiversity",
+    title: "ND Leadership Coaching",
+    description:
+      "Coaching for neurodivergent leaders and professionals navigating organisations that weren't designed for the way they think. Drawing on lived experience as an AuDHD professional with 30 years in enterprise technology.",
+    points: [
+      "Executive coaching for ND leaders",
+      "Communication and stakeholder strategies",
+      "Energy management and sustainable performance",
+      "Strengths-based career development",
+      "Building ND-inclusive teams",
+    ],
+  },
+  {
+    tag: "Workplace Wellbeing",
+    title: "Beehyve Health Collaboration",
+    description:
+      "In collaboration with Beehyve Health, delivering workplace neurodiversity programmes that go beyond awareness training. We help organisations build genuinely inclusive environments that unlock the potential of cognitive diversity.",
+    points: [
+      "Workplace neurodiversity assessments",
+      "Manager and team education programmes",
+      "Policy and accommodation frameworks",
+      "ND-inclusive hiring and onboarding",
+      "Ongoing workplace support and consultation",
+    ],
+  },
+];
+---
+
+<Layout title={`Services | ${SITE.title}`} description="Fractional CTO, enterprise architecture consulting, neurodiversity coaching, and workplace wellbeing services.">
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <section class="pt-22 pb-10 relative">
+        <!-- Left accent bar -->
+        <div class="absolute left-0 top-20 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          What I offer
+          <span class="block w-8 h-px bg-accent-dim"></span>
+        </div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          Services
+        </h1>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px]">
+          I work with organisations and individuals across technology leadership, architecture, and neurodiversity.
+          Every engagement is built around <strong class="text-foreground font-semibold">practical outcomes</strong> — not frameworks for their own sake.
+        </p>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      {services.map((service, i) => (
+        <>
+          <section class="py-12" style="border: none;">
+            <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-3">{service.tag}</div>
+            <h2 class="font-[var(--font-head)] text-2xl font-semibold text-foreground mb-4 tracking-[-0.01em]">{service.title}</h2>
+            <p class="text-text-secondary text-[15px] leading-[1.7] mb-6 max-w-[580px]">{service.description}</p>
+            <ul class="space-y-2">
+              {service.points.map((point) => (
+                <li class="flex items-start gap-3 text-text-secondary text-[15px]">
+                  <span class="mt-2 w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0"></span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </section>
+          {i < services.length - 1 && <div class="border-t border-border"></div>}
+        </>
+      ))}
+
+      <div class="border-t border-border"></div>
+
+      <section class="py-12" style="border: none;">
+        <div class="bg-background-raised border border-border border-l-3 border-l-gold rounded-r-md py-6 px-7">
+          <p class="text-text-secondary text-[15px] leading-[1.7] mb-3">
+            <strong class="text-foreground font-semibold">Interested in working together?</strong>{' '}
+            I'm happy to have an initial conversation to understand your situation and see if there's a fit.
+            No pitch decks, no hard sell — just a straight conversation.
+          </p>
+          <a href="/contact" class="inline-flex items-center gap-[7px] bg-accent text-[#0e1a0e] font-[var(--font-body)] font-semibold text-sm px-5 py-2.5 rounded transition-all hover:brightness-110 hover:-translate-y-px hover:no-underline mt-2">
+            Get in touch
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>

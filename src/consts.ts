@@ -31,26 +31,26 @@ interface Site {
 
 // Site configuration
 export const SITE: Site = {
-  website: "https://steipete.me/",
-  author: "Peter Steinberger",
-  profile: "https://steipete.me/about",
-  desc: "AI-powered tools from Swift roots to web frontiers. Every commit lands on GitHub for you to fork & remix.",
-  title: "Peter Steinberger",
-  ogImage: "peter-avatar.jpg",
+  website: "https://darrylmunro.me/",
+  author: "Darryl Munro",
+  profile: "https://darrylmunro.me/about",
+  desc: "Strong opinions, loosely held. Enterprise architecture, AI, neurodiversity, and pragmatic human systems.",
+  title: "Darryl Munro",
+  ogImage: "darryl-avatar.jpg",
   lightAndDarkMode: true,
-  postPerIndex: 10,
+  postPerIndex: 5,
   postPerPage: 10,
   scheduledPostMargin: 15 * 60 * 1000,
   showArchives: false,
   showBackButton: false,
   editPost: {
-    enabled: true,
+    enabled: false,
     text: "Edit on GitHub",
-    url: "https://github.com/steipete/steipete.me/edit/main/",
+    url: "https://github.com/darrylmunro/darrylmunro.me/edit/main/",
   },
   dynamicOgImage: true,
   lang: "en",
-  timezone: "America/Los_Angeles",
+  timezone: "Pacific/Auckland",
 };
 
 export const SITE_TITLE = SITE.title;
@@ -60,27 +60,39 @@ export const SITE_DESCRIPTION = SITE.desc;
 export const NAV_LINKS: SocialLink[] = [
   {
     href: "/",
-    label: "Blog",
+    label: "Home",
+  },
+  {
+    href: "/posts",
+    label: "Writing",
+  },
+  {
+    href: "/services",
+    label: "Services",
   },
   {
     href: "/about",
     label: "About",
+  },
+  {
+    href: "/contact",
+    label: "Contact",
   },
 ];
 
 // Social media links
 export const SOCIAL_LINKS: SocialLink[] = [
   {
-    href: "https://github.com/steipete",
+    href: "https://github.com/darrylmunro",
     label: "GitHub",
   },
   {
-    href: "https://twitter.com/steipete",
-    label: "Twitter",
+    href: "https://linkedin.com/in/darryl-munro",
+    label: "LinkedIn",
   },
   {
-    href: "https://bsky.app/profile/steipete.me",
-    label: "BlueSky",
+    href: "https://x.com/munrod10",
+    label: "X",
   },
   {
     href: "/rss.xml",
@@ -95,4 +107,6 @@ export const ICON_MAP: Record<string, string> = {
   BlueSky: "bsky",
   RSS: "rss",
   Email: "mail",
+  LinkedIn: "linkedin",
+  X: "twitter",
 };
