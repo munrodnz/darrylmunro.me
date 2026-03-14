@@ -3,38 +3,7 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-/* ── FONTS ─────────────────────────────────────────────────── */
-@font-face {
-  font-family: "Outfit";
-  src: url("https://fonts.gstatic.com/s/outfit/v11/QGYyz_MVcBeNP4NjuGObqx1XmO1I4TC1C4G-EiAou6Y.woff2") format("woff2");
-  font-weight: 300 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Source Sans 3";
-  src: url("https://fonts.gstatic.com/s/sourcesans3/v15/nwpBtKy2OAdR1K-IwhWudF-R9QMylBJAV3Bo8Ky462EM.woff2") format("woff2");
-  font-weight: 300 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Source Sans 3";
-  src: url("https://fonts.gstatic.com/s/sourcesans3/v15/nwpDtKy2OAdR1K-IwhWudF-R3woAa8opPOrG97lwqDlO9C4Ym4Q.woff2") format("woff2");
-  font-weight: 300 600;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "JetBrains Mono";
-  src: url("https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPVmUsaaDhw.woff2") format("woff2");
-  font-weight: 400 500;
-  font-style: normal;
-  font-display: swap;
-}
+/* Fonts are loaded via Google Fonts <link> in Layout.astro */
 
 /* ── DESIGN TOKENS — DARK (DEFAULT) ────────────────────────── */
 :root,
