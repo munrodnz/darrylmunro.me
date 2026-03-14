@@ -54,7 +54,7 @@ async function fetchYouTubeVideos(channelUrl: string): Promise<Episode[]> {
             id: video.videoId,
             title: video.title?.runs?.[0]?.text || "",
             published: video.publishedTimeText?.simpleText || "",
-            thumbnail: `https://i.ytimg.com/vi/${video.videoId}/maxresdefault.jpg`,
+            thumbnail: `https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`,
           };
         });
     }
@@ -82,7 +82,7 @@ try {
             id: vidMatch[1],
             title: titleMatch[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
             published: pubMatch ? pubMatch[1].slice(0, 10) : "",
-            thumbnail: `https://i.ytimg.com/vi/${vidMatch[1]}/maxresdefault.jpg`,
+            thumbnail: `https://i.ytimg.com/vi/${vidMatch[1]}/hqdefault.jpg`,
           };
         })
         .filter((e): e is Episode => e !== null);
@@ -220,7 +220,6 @@ function formatDate(dateStr: string): string {
                       alt={ep.title}
                       class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
-                      onerror={`this.src='https://i.ytimg.com/vi/${ep.id}/hqdefault.jpg'`}
                     />
                     <!-- Play overlay -->
                     <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40">
