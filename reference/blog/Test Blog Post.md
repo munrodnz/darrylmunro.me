@@ -1,0 +1,1 @@
+This is just allowing me to sort our my blog workflow using Obsidian

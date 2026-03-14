@@ -95,9 +95,9 @@ import Layout from "@/layouts/Layout.astro";
               ></textarea>
             </div>
 
-            <!-- Honeypot (anti-spam) -->
-            <div class="hidden" aria-hidden="true">
-              <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+            <!-- Honeypot — hidden from humans, filled by bots -->
+            <div style="position: absolute; left: -9999px; opacity: 0; height: 0;" aria-hidden="true">
+              <input type="text" name="website" tabindex="-1" autocomplete="off" />
             </div>
 
             <button
@@ -155,61 +155,43 @@ import Layout from "@/layouts/Layout.astro";
 </Layout>
 
 <script>
-  // ── CONTACT FORM HANDLER ───────────────────────────────────
-  // To wire this up to a CRM or form service, update the form's
-  // action attribute and/or the fetch URL below.
-  //
-  // Supported services (just set the action/endpoint):
-  //   - Formspree:    https://formspree.io/f/YOUR_ID
-  //   - Getform:      https://getform.io/f/YOUR_ID
-  //   - Basin:        https://usebasin.com/f/YOUR_ID
-  //   - Formspark:    https://submit-form.com/YOUR_ID
-  //   - Netlify Forms: add netlify attribute to form
-  //   - Custom API:   your own endpoint
-  //
-  // Currently: logs to console and shows success message.
-
   function setupContactForm() {
     const form = document.querySelector("#contact-form") as HTMLFormElement;
     const successEl = document.querySelector("#form-success");
     const errorEl = document.querySelector("#form-error");
+    const submitBtn = form?.querySelector("button[type='submit']") as HTMLButtonElement;
 
-    if (!form) return;
+    if (!form || !submitBtn) return;
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const formData = new FormData(form);
-      const endpoint = form.getAttribute("action") || form.dataset.formEndpoint;
+      const data = Object.fromEntries(formData);
 
-      // If no real endpoint is configured, log the data
-      if (!endpoint || endpoint === "#") {
-        console.log("Contact form submission (no endpoint configured):");
-        console.log(Object.fromEntries(formData));
-        successEl?.classList.remove("hidden");
-        errorEl?.classList.add("hidden");
-        form.reset();
-        return;
-      }
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending...";
+      successEl?.classList.add("hidden");
+      errorEl?.classList.add("hidden");
 
       try {
-        const response = await fetch(endpoint, {
+        const response = await fetch("/api/contact", {
           method: "POST",
-          body: formData,
-          headers: { Accept: "application/json" },
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
         });
 
         if (response.ok) {
           successEl?.classList.remove("hidden");
-          errorEl?.classList.add("hidden");
           form.reset();
         } else {
           errorEl?.classList.remove("hidden");
-          successEl?.classList.add("hidden");
         }
       } catch {
         errorEl?.classList.remove("hidden");
-        successEl?.classList.add("hidden");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Send message";
       }
     });
   }
