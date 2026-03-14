@@ -25,29 +25,76 @@ interface Episode {
 
 let episodes: Episode[] = [];
 
+// Fetch videos from YouTube channel page (more reliable than RSS feed)
+async function fetchYouTubeVideos(channelUrl: string): Promise<Episode[]> {
+  try {
+    const response = await fetch(`${channelUrl}/videos`, {
+      headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0" },
+    });
+    if (!response.ok) return [];
+
+    const html = await response.text();
+
+    // Extract ytInitialData JSON
+    const match = html.match(/var ytInitialData = ({.*?});<\/script>/);
+    if (!match) return [];
+
+    const data = JSON.parse(match[1]);
+    const tabs = data?.contents?.twoColumnBrowseResultsRenderer?.tabs || [];
+
+    for (const tab of tabs) {
+      const tr = tab?.tabRenderer;
+      if (!tr?.selected) continue;
+      const items = tr?.content?.richGridRenderer?.contents || [];
+      return items
+        .filter((item: any) => item?.richItemRenderer?.content?.videoRenderer)
+        .map((item: any) => {
+          const video = item.richItemRenderer.content.videoRenderer;
+          return {
+            id: video.videoId,
+            title: video.title?.runs?.[0]?.text || "",
+            published: video.publishedTimeText?.simpleText || "",
+            thumbnail: `https://i.ytimg.com/vi/${video.videoId}/maxresdefault.jpg`,
+          };
+        });
+    }
+  } catch (error) {
+    console.warn("Error fetching YouTube videos:", error);
+  }
+  return [];
+}
+
+// Try RSS feed first (has exact dates), fall back to page scrape
 try {
   const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${PODCAST.youtubeChannelId}`;
   const response = await fetch(feedUrl);
   if (response.ok) {
     const xml = await response.text();
-    const entries = xml.split("<entry>").slice(1);
-    episodes = entries
-      .map((entry) => {
-        const vidMatch = entry.match(/<yt:videoId>([^<]+)/);
-        const titleMatch = entry.match(/<title>([^<]+)/);
-        const pubMatch = entry.match(/<published>([^<]+)/);
-        if (!vidMatch || !titleMatch) return null;
-        return {
-          id: vidMatch[1],
-          title: titleMatch[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
-          published: pubMatch ? pubMatch[1].slice(0, 10) : "",
-          thumbnail: `https://i.ytimg.com/vi/${vidMatch[1]}/maxresdefault.jpg`,
-        };
-      })
-      .filter((e): e is Episode => e !== null);
+    if (xml.includes("<entry>")) {
+      const entries = xml.split("<entry>").slice(1);
+      episodes = entries
+        .map((entry) => {
+          const vidMatch = entry.match(/<yt:videoId>([^<]+)/);
+          const titleMatch = entry.match(/<title>([^<]+)/);
+          const pubMatch = entry.match(/<published>([^<]+)/);
+          if (!vidMatch || !titleMatch) return null;
+          return {
+            id: vidMatch[1],
+            title: titleMatch[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
+            published: pubMatch ? pubMatch[1].slice(0, 10) : "",
+            thumbnail: `https://i.ytimg.com/vi/${vidMatch[1]}/maxresdefault.jpg`,
+          };
+        })
+        .filter((e): e is Episode => e !== null);
+    }
   }
-} catch (error) {
-  console.warn("Error fetching YouTube feed:", error);
+} catch {
+  // RSS failed, will try page scrape
+}
+
+// Fall back to page scrape if RSS returned no results
+if (episodes.length === 0) {
+  episodes = await fetchYouTubeVideos(PODCAST.youtubeChannelUrl);
 }
 
 const featuredEpisode = episodes[0];
