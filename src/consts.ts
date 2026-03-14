@@ -46,7 +46,7 @@ export const SITE: Site = {
   editPost: {
     enabled: false,
     text: "Edit on GitHub",
-    url: "https://github.com/darrylmunro/darrylmunro.me/edit/main/",
+    url: "https://github.com/munrodnz/darrylmunro.me/edit/main/",
   },
   dynamicOgImage: true,
   lang: "en",
@@ -83,7 +83,7 @@ export const NAV_LINKS: SocialLink[] = [
 // Social media links
 export const SOCIAL_LINKS: SocialLink[] = [
   {
-    href: "https://github.com/darrylmunro",
+    href: "https://github.com/munrodnz",
     label: "GitHub",
   },
   {

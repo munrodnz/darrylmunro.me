@@ -15,7 +15,7 @@ Strong opinions, loosely held. Enterprise architecture, AI, neurodiversity, and 
 
 ## Links
 
-- GitHub: [@darrylmunro](https://github.com/darrylmunro)
+- GitHub: [@darrylmunro](https://github.com/munrodnz)
 - LinkedIn: [darryl-munro](https://linkedin.com/in/darryl-munro)
 - X: [@munrod10](https://x.com/munrod10)
 - Email: darryl@darrylmunro.nz

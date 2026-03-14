@@ -1,8 +1,10 @@
-// ── SUBSTACK RSS FEED FETCHER ─────────────────────────────────
-// Fetches posts from a Substack RSS feed at build time.
-// To change the Substack, update the URL below.
+// ── SUBSTACK ARCHIVE FETCHER ──────────────────────────────────
+// Fetches ALL posts from a Substack publication at build time
+// using the archive API (no post limit, unlike RSS which caps at 20).
+// To change the Substack, update the constants below.
 
-const SUBSTACK_FEED_URL = "https://darrylmunro.substack.com/feed";
+const SUBSTACK_BASE = "https://darrylmunro.substack.com";
+const PAGE_SIZE = 50; // max allowed by the API
 
 export interface SubstackPost {
   title: string;
@@ -13,67 +15,55 @@ export interface SubstackPost {
   source: "substack";
 }
 
-/**
- * Parse a simple XML string to extract values by tag name.
- * This avoids needing a full XML parser dependency.
- */
-function extractTag(xml: string, tag: string): string {
-  const match = xml.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`));
-  if (match) return match[1].trim();
-
-  const simple = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
-  return simple ? simple[1].trim() : "";
+interface SubstackArchiveItem {
+  title: string;
+  subtitle?: string;
+  description?: string;
+  slug: string;
+  post_date: string;
+  canonical_url: string;
+  cover_image?: string;
+  audience: string;
 }
 
-function extractImageFromContent(content: string): string | undefined {
-  // Look for the first <img> src in the content
-  const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/);
-  if (imgMatch) return imgMatch[1];
-
-  // Look for enclosure or media:content
-  const enclosureMatch = content.match(/<enclosure[^>]+url=["']([^"']+)["'][^>]+type=["']image/);
-  if (enclosureMatch) return enclosureMatch[1];
-
-  return undefined;
+async function fetchPage(offset: number): Promise<SubstackArchiveItem[]> {
+  const url = `${SUBSTACK_BASE}/api/v1/archive?sort=new&offset=${offset}&limit=${PAGE_SIZE}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    console.warn(`Substack archive API error: ${response.status}`);
+    return [];
+  }
+  const data = await response.json();
+  if (Array.isArray(data)) return data;
+  return [];
 }
 
 export async function getSubstackPosts(): Promise<SubstackPost[]> {
   try {
-    const response = await fetch(SUBSTACK_FEED_URL);
-    if (!response.ok) {
-      console.warn(`Failed to fetch Substack feed: ${response.status} ${response.statusText}`);
-      return [];
+    const allItems: SubstackArchiveItem[] = [];
+    let offset = 0;
+
+    // Paginate through all posts
+    while (true) {
+      const page = await fetchPage(offset);
+      if (page.length === 0) break;
+      allItems.push(...page);
+      if (page.length < PAGE_SIZE) break; // last page
+      offset += PAGE_SIZE;
     }
 
-    const xml = await response.text();
-
-    // Split into individual <item> blocks
-    const items = xml.split("<item>").slice(1);
-
-    return items
-      .map((item) => {
-        const title = extractTag(item, "title");
-        const link = extractTag(item, "link");
-        const description = extractTag(item, "description") || extractTag(item, "subtitle");
-        const pubDate = extractTag(item, "pubDate");
-        const content = extractTag(item, "content:encoded") || extractTag(item, "content");
-        const heroImage =
-          extractImageFromContent(item) || (content ? extractImageFromContent(content) : undefined);
-
-        if (!title || !link) return null;
-
-        return {
-          title,
-          description: description.replace(/<[^>]*>/g, "").slice(0, 300),
-          url: link,
-          pubDatetime: pubDate ? new Date(pubDate) : new Date(),
-          heroImage,
-          source: "substack" as const,
-        };
-      })
-      .filter((post): post is SubstackPost => post !== null);
+    return allItems
+      .filter((item) => item.audience === "everyone") // only public posts
+      .map((item) => ({
+        title: item.title,
+        description: (item.subtitle || item.description || "").slice(0, 300),
+        url: item.canonical_url,
+        pubDatetime: new Date(item.post_date),
+        heroImage: item.cover_image || undefined,
+        source: "substack" as const,
+      }));
   } catch (error) {
-    console.warn("Error fetching Substack feed:", error);
+    console.warn("Error fetching Substack archive:", error);
     return [];
   }
 }

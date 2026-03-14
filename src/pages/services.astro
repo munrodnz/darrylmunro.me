@@ -50,6 +50,7 @@ const services = [
   {
     tag: "Workplace Wellbeing",
     title: "Beehyve Health Collaboration",
+    url: "https://www.beehyve.health/",
     description:
       "In collaboration with Beehyve Health, delivering workplace neurodiversity programmes that go beyond awareness training. We help organisations build genuinely inclusive environments that unlock the potential of cognitive diversity.",
     points: [
@@ -91,7 +92,9 @@ const services = [
         <>
           <section class="py-12" style="border: none;">
             <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-3">{service.tag}</div>
-            <h2 class="font-[var(--font-head)] text-2xl font-semibold text-foreground mb-4 tracking-[-0.01em]">{service.title}</h2>
+            <h2 class="font-[var(--font-head)] text-2xl font-semibold text-foreground mb-4 tracking-[-0.01em]">
+              {service.url ? <a href={service.url} target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-colors">{service.title}</a> : service.title}
+            </h2>
             <p class="text-text-secondary text-[15px] leading-[1.7] mb-6 max-w-[580px]">{service.description}</p>
             <ul class="space-y-2">
               {service.points.map((point) => (
