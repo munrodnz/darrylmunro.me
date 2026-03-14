@@ -1,5 +1,8 @@
 {
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist",
   "installCommand": "bun install",
+  "framework": "astro",
   "redirects": [
     {
       "source": "/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug",

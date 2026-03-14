@@ -3,19 +3,17 @@ import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap, { ChangeFreqEnum } from "@astrojs/sitemap";
 import react from "@astrojs/react";
-import vercel from "@astrojs/vercel";
 import tailwindcss from "@tailwindcss/vite";
 import remarkToc from "remark-toc";
 import remarkCollapse from "remark-collapse";
 import { remarkLazyLoadImages } from "./src/utils/remarkLazyLoadImages.mjs";
-import { SITE } from "./src/config";
 import AstroPWA from "@vite-pwa/astro";
+
+const SITE_URL = "https://darrylmunro.me/";
 
 // https://astro.build/config
 export default defineConfig({
-  site: SITE.website,
-  output: "server",
-  adapter: vercel(),
+  site: SITE_URL,
   trailingSlash: "never",
   markdown: {
     remarkPlugins: [
@@ -34,11 +32,11 @@ export default defineConfig({
     mdx(),
 	    sitemap({
 	      filter: (page) => {
-	        if (!SITE.showArchives && page.endsWith("/archives")) return false;
+	        if (!false && page.endsWith("/archives")) return false;
         return true;
       },
 	      serialize: (item) => {
-	        if (item.url.endsWith('/') && item.url !== SITE.website + '/') {
+	        if (item.url.endsWith('/') && item.url !== SITE_URL + '/') {
 	          item.url = item.url.slice(0, -1);
 	        }
 
@@ -47,7 +45,7 @@ export default defineConfig({
 	        item.changefreq = ChangeFreqEnum.MONTHLY;
 	        item.priority = 0.5;
 
-	        if (url === SITE.website || url === SITE.website + '/') {
+	        if (url === SITE_URL || url === SITE_URL + '/') {
 	          item.priority = 1.0;
 	          item.changefreq = ChangeFreqEnum.DAILY;
 	          item.lastmod = new Date().toISOString();
@@ -88,7 +86,7 @@ export default defineConfig({
       manifest: {
         name: "Darryl Munro",
         short_name: "darrylmunro",
-        description: SITE.desc,
+        description: "Strong opinions, loosely held. Enterprise architecture, AI, neurodiversity, and pragmatic human systems.",
         theme_color: "#191918",
         background_color: "#191918",
         display: "standalone",

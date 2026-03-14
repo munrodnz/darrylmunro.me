@@ -1,7 +1,6 @@
-import type { APIRoute } from "astro";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 // ── INPUT SANITIZATION ────────────────────────────────────────
-// Strip HTML tags and limit length to prevent injection/abuse.
 function sanitize(input: string, maxLength = 5000): string {
   return input
     .replace(/&/g, "&amp;")
@@ -15,9 +14,9 @@ function sanitize(input: string, maxLength = 5000): string {
 
 // ── OAUTH TOKEN ───────────────────────────────────────────────
 const getAccessToken = async (): Promise<string> => {
-  const tenantId = import.meta.env.AZURE_TENANT_ID;
-  const clientId = import.meta.env.AZURE_CLIENT_ID;
-  const clientSecret = import.meta.env.AZURE_CLIENT_SECRET;
+  const tenantId = process.env.AZURE_TENANT_ID;
+  const clientId = process.env.AZURE_CLIENT_ID;
+  const clientSecret = process.env.AZURE_CLIENT_SECRET;
 
   if (!tenantId || !clientId || !clientSecret) {
     throw new Error("Azure credentials not configured");
@@ -42,25 +41,25 @@ const getAccessToken = async (): Promise<string> => {
 };
 
 // ── API HANDLER ───────────────────────────────────────────────
-export const POST: APIRoute = async ({ request }) => {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    const body = await request.json();
-    const { name, email, subject, message, website } = body;
+    const { name, email, subject, message, website } = req.body;
 
-    // Honeypot — bots fill hidden fields, humans don't.
-    // Return 200 so bots think it succeeded.
+    // Honeypot — bots fill hidden fields, humans don't
     if (website) {
-      return new Response(JSON.stringify({ success: true }), { status: 200 });
+      return res.status(200).json({ success: true });
     }
 
-    // Validate required fields
     if (!name || !email || !message) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Basic email format check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return new Response(JSON.stringify({ error: "Invalid email address" }), { status: 400 });
+      return res.status(400).json({ error: "Invalid email address" });
     }
 
     const safeName = sanitize(name, 200);
@@ -68,8 +67,8 @@ export const POST: APIRoute = async ({ request }) => {
     const safeSubject = sanitize(subject || "General enquiry", 200);
     const safeMessage = sanitize(message);
 
-    const sender = import.meta.env.MAIL_SENDER;
-    const recipient = import.meta.env.MAIL_RECIPIENT;
+    const sender = process.env.MAIL_SENDER;
+    const recipient = process.env.MAIL_RECIPIENT;
 
     if (!sender || !recipient) {
       throw new Error("Mail sender/recipient not configured");
@@ -106,14 +105,12 @@ export const POST: APIRoute = async ({ request }) => {
     if (!graphRes.ok) {
       const err = await graphRes.json();
       console.error("Graph API error:", err);
-      return new Response(JSON.stringify({ error: "Failed to send message" }), { status: 500 });
+      return res.status(500).json({ error: "Failed to send message" });
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return res.status(200).json({ success: true });
   } catch (err) {
     console.error("Contact form error:", err);
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    return res.status(500).json({ error: "Internal server error" });
   }
-};
-
-export const prerender = false;
+}
