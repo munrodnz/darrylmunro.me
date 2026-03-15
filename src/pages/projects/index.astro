@@ -1,0 +1,86 @@
+---
+import { getCollection } from "astro:content";
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+
+const allProjects = await getCollection("projects", ({ data }) => !data.draft);
+const projects = allProjects.sort((a, b) => {
+  // Sort by statusType priority, then sortOrder
+  const typePriority = { live: 0, building: 1, idea: 2, paused: 3 };
+  const aPri = typePriority[a.data.statusType] ?? 99;
+  const bPri = typePriority[b.data.statusType] ?? 99;
+  if (aPri !== bPri) return aPri - bPri;
+  return a.data.sortOrder - b.data.sortOrder;
+});
+---
+
+<Layout title={`Projects | ${SITE.title}`} description="Things I'm building and have built. From idea to prototype to production.">
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <section class="pt-22 pb-10 relative" style="border: none;">
+        <div class="absolute left-0 top-20 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          Projects
+          <span class="block w-8 h-px bg-accent-dim"></span>
+        </div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          Things I'm Building
+        </h1>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px]">
+          From napkin sketch to production. Each project page documents the full journey — the idea, the prototype, the build process, and what's next.
+        </p>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <section class="py-12" style="border: none;">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {projects.map((project) => (
+            <a href={`/projects/${project.id}`} class="group bg-background-raised border border-border rounded-md p-6 transition-all duration-200 hover:border-accent-dim hover:-translate-y-0.5 relative overflow-hidden block hover:no-underline">
+              <div class="absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style="background: linear-gradient(90deg, var(--accent), var(--gold));"></div>
+
+              {project.data.heroImage && (
+                <img
+                  src={project.data.heroImage}
+                  alt={project.data.title}
+                  class="w-full h-32 object-cover rounded mb-4 border border-border"
+                  loading="lazy"
+                />
+              )}
+
+              <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-2.5">{project.data.tag}</div>
+              <h2 class="font-[var(--font-head)] text-[17px] font-semibold text-foreground mb-2 tracking-[-0.01em] group-hover:text-accent transition-colors">{project.data.title}</h2>
+              <p class="text-sm text-text-secondary leading-relaxed mb-4">{project.data.description}</p>
+
+              <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-1.5 text-xs text-muted font-[var(--font-mono)]">
+                  <span class:list={["w-1.5 h-1.5 rounded-full", {
+                    "bg-accent shadow-[0_0_6px_var(--accent-dim)]": project.data.statusType === "live",
+                    "bg-gold shadow-[0_0_6px_var(--gold-dim)]": project.data.statusType === "building",
+                    "bg-muted": project.data.statusType === "idea" || project.data.statusType === "paused",
+                  }]}></span>
+                  {project.data.status}
+                </span>
+
+                {project.data.techStack.length > 0 && (
+                  <div class="flex gap-1.5 flex-wrap justify-end">
+                    {project.data.techStack.slice(0, 3).map((tech) => (
+                      <span class="font-[var(--font-mono)] text-[10px] text-muted border border-border rounded px-1.5 py-0.5">{tech}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>

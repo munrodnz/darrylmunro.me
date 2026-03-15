@@ -1,14 +1,21 @@
 ---
+import { getCollection } from "astro:content";
 import Footer from "@/components/Footer.astro";
 import Header from "@/components/Header.astro";
 import StructuredData from "@/components/StructuredData.astro";
 import { SITE } from "@/config";
 import Layout from "@/layouts/Layout.astro";
 import { getAllPosts } from "@/utils/getAllPosts";
-import { workCards, nowContent } from "@/data/homepage";
+import { nowContent } from "@/data/homepage";
 
 const allPosts = await getAllPosts();
 const recentPosts = allPosts.slice(0, SITE.postPerIndex);
+
+const allProjects = await getCollection("projects", ({ data }) => !data.draft);
+const featuredProjects = allProjects
+  .filter((p) => p.data.featured)
+  .sort((a, b) => a.data.sortOrder - b.data.sortOrder)
+  .slice(0, 4);
 ---
 
 <Layout description={SITE.desc}>
@@ -83,25 +90,29 @@ const recentPosts = allPosts.slice(0, SITE.postPerIndex);
       <!-- WORK -->
       <section id="work" class="py-16 border-b-0!" style="border: none;">
         <div class="font-[var(--font-mono)] text-[11px] font-medium text-muted tracking-[0.14em] uppercase mb-8 flex items-center gap-2.5">
-          Things I've built
+          Things I'm building
           <span class="flex-1 h-px bg-border"></span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {workCards.map((card) => (
-            <div class="group bg-background-raised border border-border rounded-md p-6 transition-all duration-200 hover:border-accent-dim hover:-translate-y-0.5 relative overflow-hidden">
+          {featuredProjects.map((project) => (
+            <a href={`/projects/${project.id}`} class="group bg-background-raised border border-border rounded-md p-6 transition-all duration-200 hover:border-accent-dim hover:-translate-y-0.5 relative overflow-hidden block hover:no-underline">
               <div class="absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style="background: linear-gradient(90deg, var(--accent), var(--gold));"></div>
-              <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-2.5">{card.tag}</div>
-              <h3 class="font-[var(--font-head)] text-[17px] font-semibold text-foreground mb-2 tracking-[-0.01em]">{card.title}</h3>
-              <p class="text-sm text-text-secondary leading-relaxed mb-4">{card.description}</p>
+              <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-2.5">{project.data.tag}</div>
+              <h3 class="font-[var(--font-head)] text-[17px] font-semibold text-foreground mb-2 tracking-[-0.01em] group-hover:text-accent transition-colors">{project.data.title}</h3>
+              <p class="text-sm text-text-secondary leading-relaxed mb-4">{project.data.description}</p>
               <span class="inline-flex items-center gap-1.5 text-xs text-muted font-[var(--font-mono)]">
                 <span class:list={["w-1.5 h-1.5 rounded-full", {
-                  "bg-accent shadow-[0_0_6px_var(--accent-dim)]": card.statusType === "live",
-                  "bg-gold shadow-[0_0_6px_var(--gold-dim)]": card.statusType === "building",
+                  "bg-accent shadow-[0_0_6px_var(--accent-dim)]": project.data.statusType === "live",
+                  "bg-gold shadow-[0_0_6px_var(--gold-dim)]": project.data.statusType === "building",
+                  "bg-muted": project.data.statusType === "idea" || project.data.statusType === "paused",
                 }]}></span>
-                {card.status}
+                {project.data.status}
               </span>
-            </div>
+            </a>
           ))}
+        </div>
+        <div class="mt-6">
+          <a href="/projects" class="text-accent text-sm hover:underline">All projects &rarr;</a>
         </div>
       </section>
 

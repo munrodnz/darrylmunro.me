@@ -1,0 +1,118 @@
+---
+import { getCollection, render } from "astro:content";
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects", ({ data }) => !data.draft);
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const { title, description, tag, status, statusType, heroImage, url, repoUrl, techStack, startDate } = project.data;
+---
+
+<Layout title={`${title} | ${SITE.title}`} description={description}>
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <!-- Back link -->
+      <div class="pt-8">
+        <a href="/projects" class="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-accent transition-colors hover:no-underline">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          All projects
+        </a>
+      </div>
+
+      <!-- Header -->
+      <section class="pt-8 pb-10 relative" style="border: none;">
+        <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-3">{tag}</div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          {title}
+        </h1>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px] mb-6">
+          {description}
+        </p>
+
+        <!-- Meta row -->
+        <div class="flex flex-wrap items-center gap-4 mb-6">
+          <span class="inline-flex items-center gap-1.5 text-xs text-muted font-[var(--font-mono)]">
+            <span class:list={["w-1.5 h-1.5 rounded-full", {
+              "bg-accent shadow-[0_0_6px_var(--accent-dim)]": statusType === "live",
+              "bg-gold shadow-[0_0_6px_var(--gold-dim)]": statusType === "building",
+              "bg-muted": statusType === "idea" || statusType === "paused",
+            }]}></span>
+            {status}
+          </span>
+
+          {startDate && (
+            <span class="text-xs text-muted font-[var(--font-mono)]">Started {startDate}</span>
+          )}
+
+          {url && (
+            <a href={url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs text-accent font-[var(--font-mono)] hover:underline">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Live site
+            </a>
+          )}
+
+          {repoUrl && (
+            <a href={repoUrl} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs text-text-secondary font-[var(--font-mono)] hover:text-accent transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              Source
+            </a>
+          )}
+        </div>
+
+        <!-- Tech stack -->
+        {techStack.length > 0 && (
+          <div class="flex gap-2 flex-wrap">
+            {techStack.map((tech) => (
+              <span class="font-[var(--font-mono)] text-[11px] text-muted border border-border rounded px-2 py-1">{tech}</span>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <!-- Hero image -->
+      {heroImage && (
+        <div class="mb-8">
+          <img
+            src={heroImage}
+            alt={title}
+            class="w-full rounded-md border border-border"
+            loading="lazy"
+          />
+        </div>
+      )}
+
+      <div class="border-t border-border"></div>
+
+      <!-- Content -->
+      <section class="py-12" style="border: none;">
+        <article class="prose max-w-none prose-img:border-0 prose-img:rounded-md prose-headings:font-[var(--font-head)]">
+          <Content />
+        </article>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <!-- Back link -->
+      <section class="py-8" style="border: none;">
+        <a href="/projects" class="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-accent transition-colors hover:no-underline">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          All projects
+        </a>
+      </section>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>
