@@ -15,15 +15,15 @@ const isActive = (path: string) => {
 ---
 
 <nav class="sticky top-0 z-100 border-b border-border" style="background: rgba(var(--nav-bg-rgb, '25, 25, 24'), 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
-  <div class="mx-auto flex max-w-[740px] items-center justify-between px-6 h-14">
-    <a href="/" class="font-[var(--font-head)] font-semibold text-[15px] text-foreground tracking-[0.01em] hover:no-underline">
+  <div class="mx-auto flex w-full max-w-[1100px] items-center justify-between gap-4 px-6 h-14">
+    <a href="/" class="font-[var(--font-head)] font-semibold text-[15px] text-foreground tracking-[0.01em] hover:no-underline whitespace-nowrap">
       {SITE.author} <span class="text-accent">·</span> NZ
     </a>
 
     <!-- Mobile menu button -->
     <button
       id="menu-btn"
-      class="sm:hidden p-2 text-text-secondary hover:text-foreground transition-colors"
+      class="lg:hidden p-2 text-text-secondary hover:text-foreground transition-colors"
       aria-label="Open Menu"
       aria-expanded="false"
       aria-controls="nav-links"
@@ -37,13 +37,13 @@ const isActive = (path: string) => {
     </button>
 
     <!-- Desktop nav -->
-    <ul id="nav-links" class="hidden sm:flex items-center gap-7 list-none">
+    <ul id="nav-links" class="hidden lg:flex items-center gap-6 list-none">
       {NAV_LINKS.map(({ href, label }) => (
         <li>
           <a
             href={href}
             class:list={[
-              "font-[var(--font-body)] text-sm text-text-secondary tracking-[0.02em] transition-colors hover:text-foreground hover:no-underline",
+              "font-[var(--font-body)] text-sm text-text-secondary tracking-[0.02em] whitespace-nowrap transition-colors hover:text-foreground hover:no-underline",
               { "active-nav": isActive(href) },
             ]}
           >
@@ -71,7 +71,7 @@ const isActive = (path: string) => {
   </div>
 
   <!-- Mobile menu -->
-  <div id="mobile-menu" class="hidden sm:hidden border-t border-border">
+  <div id="mobile-menu" class="hidden lg:hidden border-t border-border">
     <ul class="flex flex-col py-4 px-6 gap-1 list-none">
       {NAV_LINKS.map(({ href, label }) => (
         <li>
