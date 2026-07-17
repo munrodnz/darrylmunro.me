@@ -1,0 +1,200 @@
+---
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+
+// ── QUICK-READ SUMMARY ────────────────────────────────────────
+// Four-at-a-glance cards shown under the intro.
+const glance = [
+  { t: "Best window", d: "Mornings to early afternoon for anything hard." },
+  { t: "Thinking", d: "Systems, connections and design principles." },
+  { t: "Comms", d: "Warm, brief, quick. Async over long threads." },
+  { t: "Decisions", d: "Synthesise together, then shape and align." },
+];
+
+// ── LENSES ────────────────────────────────────────────────────
+// Each section pairs "how I work" with "what helps".
+const lenses = [
+  {
+    num: "01",
+    title: "Energy & rhythm",
+    lede: "When you'll get the best of me, and how I stay effective over the long haul.",
+    truthTitle: "How I run",
+    truth: [
+      "I do my deepest thinking in the morning through early afternoon. If you want my sharpest input on something hard, that's the window.",
+      "Late afternoon suits lighter, relational, or catch-up conversations better than heavy problem-solving.",
+      "I protect a daily walk — it's how I think and reset, not time off.",
+      "After an intense stretch I sometimes need a quieter day. It's how I stay good over months, not just days.",
+    ],
+    helps: [
+      "Book the hard, high-stakes conversations in the morning where you can.",
+      "Use the afternoon for lighter, relational, or catch-up work.",
+      "Leave a little white space in the day — it's where the good thinking happens.",
+    ],
+  },
+  {
+    num: "02",
+    title: "How I think & focus",
+    lede: "How I approach a problem, and how to get the best work out of me.",
+    truthTitle: "How I think",
+    truth: [
+      "I'm a systems-and-connections thinker — I naturally see how things across different domains join up, and I work in principles and design, not just tasks.",
+      "I do my best work with one clear priority and a concrete outcome to aim at. Give me “what does good look like” and I'll drive to it.",
+      "I can hold a lot of parallel threads — so the most useful thing you can do is help me prioritise the one that matters most right now.",
+      "I get moving fastest on work that's fresh and clearly anchored to a real outcome.",
+    ],
+    helps: [
+      "Point me at one clear priority rather than a long flat list.",
+      "Give me a concrete outcome or “what good looks like” to aim at.",
+      "Start us small — the first real step unlocks the rest.",
+    ],
+  },
+  {
+    num: "03",
+    title: "Communication & meetings",
+    lede: "What to expect from me in writing and in the room.",
+    truthTitle: "How I communicate",
+    truth: [
+      "I'm warm and concise — expect short, quick replies. Don't read anything into brevity; it's efficiency, not curtness.",
+      "I explain complex things in plain language and metaphor, translated into your world.",
+      "In conversation I'll play back what I've heard to check we're aligned, and I'll give you a clear point of view while genuinely wanting your challenge.",
+      "I lean on shared notes and written follow-ups so nothing important lives only in one person's head.",
+    ],
+    helps: [
+      "Short, async written comms over long, dense threads.",
+      "An agenda or a clear anchor ahead of a meeting.",
+      "Room to think out loud and reframe before we land a decision.",
+    ],
+  },
+  {
+    num: "04",
+    title: "Collaboration & decisions",
+    lede: "How I partner with people and how I make decisions.",
+    truthTitle: "How I collaborate",
+    truth: [
+      "I build through relationships and I'm energised by connecting people and ideas.",
+      "I anchor everything to real business value — I won't recommend shiny things for their own sake, and I'll always tie technology back to outcomes and cost.",
+      "I like to synthesise in the room and then take it away to shape into something we can align on — collaborative, not combative.",
+      "I work best with clear ownership boundaries: bring me your business context and let me bring the design and architecture.",
+    ],
+    helps: [
+      "Bring the business context; let me bring the design.",
+      "Agree who owns what — clear boundaries beat blurred ones.",
+      "Trust me to take it away and shape it, then align.",
+    ],
+  },
+];
+---
+
+<Layout
+  title={`How I Work | ${SITE.title}`}
+  description="A short guide to working with me — my rhythms, strengths and preferences, so we can do good work together with less friction from the start."
+>
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <!-- INTRO -->
+      <section class="pt-22 pb-10 relative">
+        <!-- Left accent bar -->
+        <div class="absolute left-0 top-20 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          A short guide to working with me
+          <span class="block w-8 h-px bg-accent-dim"></span>
+        </div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          How I Work
+        </h1>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[600px] mb-4">
+          A quick map of my rhythms, strengths and preferences — so we can do good work together
+          with <strong class="text-foreground font-semibold">less friction from the start</strong>.
+        </p>
+        <p class="text-[15px] leading-[1.7] text-text-secondary max-w-[600px]">
+          Everyone works differently. Rather than leave you to figure mine out by trial and error, here's the short
+          version: when you'll get the best of me, how I think, and how I like to collaborate. None of it is fixed —
+          treat it as a starting point, and tell me how you work best too.
+        </p>
+
+        <!-- Quick-read grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
+          {glance.map((g) => (
+            <div class="bg-background-raised border border-border rounded-lg p-4">
+              <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-1.5">{g.t}</div>
+              <div class="text-text-secondary text-[13.5px] leading-[1.5]">{g.d}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <!-- LENSES -->
+      {lenses.map((lens, i) => (
+        <>
+          <section class="py-12" style="border: none;">
+            <div class="flex items-baseline gap-3.5 mb-2">
+              <span class="font-[var(--font-mono)] text-[13px] font-medium text-accent tracking-[0.05em]">{lens.num}</span>
+              <h2 class="font-[var(--font-head)] text-2xl font-semibold text-foreground tracking-[-0.01em]">{lens.title}</h2>
+            </div>
+            <p class="text-text-secondary text-[15px] leading-[1.7] mb-6 max-w-[580px]">{lens.lede}</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- How I work -->
+              <div class="bg-background-raised border border-border rounded-lg p-5">
+                <h3 class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-4 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0"></span>
+                  {lens.truthTitle}
+                </h3>
+                <ul class="space-y-3">
+                  {lens.truth.map((point) => (
+                    <li class="flex items-start gap-3 text-text-secondary text-[14.5px] leading-[1.6]">
+                      <span class="mt-2 w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0"></span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <!-- What helps -->
+              <div class="bg-background-raised border border-border border-l-3 border-l-gold rounded-r-lg rounded-l-sm p-5">
+                <h3 class="font-[var(--font-mono)] text-[11px] text-gold tracking-[0.08em] uppercase mb-4 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0"></span>
+                  What helps
+                </h3>
+                <ul class="space-y-3">
+                  {lens.helps.map((point) => (
+                    <li class="flex items-start gap-3 text-text-secondary text-[14.5px] leading-[1.6]">
+                      <span class="mt-2 w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0"></span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+          {i < lenses.length - 1 && <div class="border-t border-border"></div>}
+        </>
+      ))}
+
+      <div class="border-t border-border"></div>
+
+      <!-- CLOSER -->
+      <section class="py-12" style="border: none;">
+        <div class="bg-background-raised border border-border border-l-3 border-l-gold rounded-r-md py-6 px-7">
+          <p class="text-text-secondary text-[15px] leading-[1.7]">
+            <strong class="text-foreground font-semibold">The short version:</strong>{' '}
+            get me in the morning for the hard stuff, give me one clear priority anchored to a real outcome, keep comms
+            short and async, and bring me the business context so I can bring the design. Do that and we'll move fast
+            together. And tell me how <em>you</em> work best — this goes both ways.
+          </p>
+          <a href="/contact" class="inline-flex items-center gap-[7px] bg-accent text-[#0e1a0e] font-[var(--font-body)] font-semibold text-sm px-5 py-2.5 rounded transition-all hover:brightness-110 hover:-translate-y-px hover:no-underline mt-5">
+            Get in touch
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>
