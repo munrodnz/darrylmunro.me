@@ -19,8 +19,11 @@ export type RateLimitResult = {
   trippedBy?: string;
 };
 
-const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
-const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+// Accept both naming schemes: UPSTASH_* when the credentials are pasted in by
+// hand from the Upstash console, KV_REST_API_* when the database is provisioned
+// through Vercel's marketplace integration, which names them differently.
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
 
 // ── In-memory fallback ────────────────────────────────────────
 const memory = new Map<string, { count: number; expiresAt: number }>();
