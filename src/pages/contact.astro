@@ -3,6 +3,10 @@ import Footer from "@/components/Footer.astro";
 import Header from "@/components/Header.astro";
 import { SITE } from "@/config";
 import Layout from "@/layouts/Layout.astro";
+
+// Empty until the Cloudflare keys are configured; the form still works, it
+// just has one fewer layer of protection.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 ---
 
 <Layout title={`Contact | ${SITE.title}`} description="Get in touch with Darryl Munro. Architecture, AI, neurodiversity, and technology leadership.">
@@ -37,6 +41,7 @@ import Layout from "@/layouts/Layout.astro";
             action="#"
             method="POST"
             data-form-endpoint=""
+            data-turnstile-sitekey={turnstileSiteKey}
           >
             <!-- Name -->
             <div>
@@ -100,6 +105,9 @@ import Layout from "@/layouts/Layout.astro";
               <input type="text" name="website" tabindex="-1" autocomplete="off" />
             </div>
 
+            <!-- Cloudflare Turnstile — rendered explicitly by the script below -->
+            {turnstileSiteKey && <div id="turnstile-widget" class="min-h-[65px]"></div>}
+
             <button
               type="submit"
               class="inline-flex items-center gap-[7px] bg-accent text-[#0e1a0e] font-[var(--font-body)] font-semibold text-sm px-6 py-3 rounded transition-all hover:brightness-110 hover:-translate-y-px cursor-pointer"
@@ -114,7 +122,7 @@ import Layout from "@/layouts/Layout.astro";
 
             <!-- Error message (hidden by default) -->
             <div id="form-error" class="hidden bg-background-raised border border-gold rounded p-4">
-              <p class="text-gold font-semibold text-sm">Something went wrong. Please try emailing me directly.</p>
+              <p id="form-error-text" class="text-gold font-semibold text-sm">Something went wrong. Please try emailing me directly.</p>
             </div>
           </form>
 
@@ -154,44 +162,145 @@ import Layout from "@/layouts/Layout.astro";
   <Footer />
 </Layout>
 
+{turnstileSiteKey && (
+  <script
+    is:inline
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+    async
+    defer
+  ></script>
+)}
+
 <script>
+  const TOKEN_ENDPOINT = "/api/form-token";
+  const CONTACT_ENDPOINT = "/api/contact";
+  // Must clear the server's MIN_AGE_MS before a retry token is accepted.
+  const TOKEN_SETTLE_MS = 3200;
+
   function setupContactForm() {
     const form = document.querySelector("#contact-form") as HTMLFormElement;
     const successEl = document.querySelector("#form-success");
     const errorEl = document.querySelector("#form-error");
+    const errorTextEl = document.querySelector("#form-error-text");
     const submitBtn = form?.querySelector("button[type='submit']") as HTMLButtonElement;
 
     if (!form || !submitBtn) return;
 
+    // ── Signed timing token ───────────────────────────────────
+    let formToken: string | null = null;
+
+    async function fetchFormToken() {
+      try {
+        const res = await fetch(TOKEN_ENDPOINT, { cache: "no-store" });
+        if (!res.ok) return;
+        formToken = (await res.json())?.token ?? null;
+      } catch {
+        // Recovered at submit time.
+      }
+    }
+
+    fetchFormToken();
+
+    // ── Turnstile ─────────────────────────────────────────────
+    const siteKey = form.dataset.turnstileSitekey;
+    const widgetHost = document.querySelector("#turnstile-widget");
+    let widgetId: string | null = null;
+
+    function renderTurnstile() {
+      const turnstile = (window as any).turnstile;
+      if (!turnstile || !widgetHost) return;
+      widgetHost.innerHTML = "";
+      widgetId = turnstile.render(widgetHost, {
+        sitekey: siteKey,
+        action: "contact",
+        theme: "auto",
+      });
+    }
+
+    if (siteKey && widgetHost) {
+      if ((window as any).turnstile) {
+        renderTurnstile();
+      } else {
+        // The script is async, so wait for it rather than racing it.
+        const poll = setInterval(() => {
+          if ((window as any).turnstile) {
+            clearInterval(poll);
+            renderTurnstile();
+          }
+        }, 200);
+        setTimeout(() => clearInterval(poll), 15000);
+      }
+    }
+
+    function showError(message?: string) {
+      if (errorTextEl && message) errorTextEl.textContent = message;
+      errorEl?.classList.remove("hidden");
+    }
+
+    function post(payload: Record<string, unknown>) {
+      return fetch(CONTACT_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData);
+      const data = Object.fromEntries(new FormData(form));
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Sending...";
+      const turnstile = (window as any).turnstile;
+      const turnstileToken =
+        siteKey && turnstile && widgetId !== null
+          ? turnstile.getResponse(widgetId)
+          : undefined;
+
       successEl?.classList.add("hidden");
       errorEl?.classList.add("hidden");
 
+      if (siteKey && !turnstileToken) {
+        showError("Please complete the verification check, then send again.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending...";
+
       try {
-        const response = await fetch("/api/contact", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
+        if (!formToken) await fetchFormToken();
+
+        let response = await post({ ...data, formToken, turnstileToken });
+
+        // A stale or missing token is recoverable — fetch a fresh one, let it
+        // age past the server's minimum, and retry once.
+        if (response.status === 400) {
+          const body = await response.clone().json().catch(() => ({}) as any);
+          if (body?.error === "expired_token" || body?.error === "missing_token") {
+            await fetchFormToken();
+            await new Promise((resolve) => setTimeout(resolve, TOKEN_SETTLE_MS));
+            response = await post({ ...data, formToken, turnstileToken });
+          }
+        }
 
         if (response.ok) {
           successEl?.classList.remove("hidden");
           form.reset();
         } else {
-          errorEl?.classList.remove("hidden");
+          const body = await response.json().catch(() => ({}) as any);
+          showError(
+            body?.error && response.status !== 500
+              ? body.error
+              : "Something went wrong. Please try emailing me directly.",
+          );
         }
       } catch {
-        errorEl?.classList.remove("hidden");
+        showError("Something went wrong. Please try emailing me directly.");
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = "Send message";
+        // Turnstile tokens are single-use.
+        (window as any).turnstile?.reset?.(widgetId);
       }
     });
   }
