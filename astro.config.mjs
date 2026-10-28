@@ -10,7 +10,7 @@ import { remarkLazyLoadImages } from "./src/utils/remarkLazyLoadImages.mjs";
 import AstroPWA from "@vite-pwa/astro";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 
-const SITE_URL = "https://darrylmunro.me/";
+const SITE_URL = "https://www.darrylmunro.nz/";
 
 // Published patterns and their last-reviewed dates, for sitemap <lastmod>.
 // Drafts (draft: true, or no draft field — the schema default) are excluded.

@@ -7,7 +7,7 @@ import loadGoogleFonts from "../loadGoogleFont";
  *
  * This template generates social media preview cards for blog posts.
  *
- * CUSTOMIZATION: We override the default behavior to show "darrylmunro.me"
+ * CUSTOMIZATION: We override the default behavior to show "darrylmunro.nz"
  * on the right side instead of the author name (Darryl Munro).
  * This avoids redundancy since the author name already appears on the left
  * with "by Darryl Munro".
@@ -213,7 +213,7 @@ export default async (post) => {
                             type: "span",
                             props: {
                               style: { overflow: "hidden", fontWeight: "bold" },
-                              children: "darrylmunro.me",
+                              children: "darrylmunro.nz",
                             },
                           },
                         ],
@@ -231,7 +231,7 @@ export default async (post) => {
       width: 1200,
       height: 630,
       embedFont: true,
-      fonts: await loadGoogleFonts(post.data.title + post.data.author + "darrylmunro.me" + "by"),
+      fonts: await loadGoogleFonts(post.data.title + post.data.author + "darrylmunro.nz" + "by"),
     }
   );
 };

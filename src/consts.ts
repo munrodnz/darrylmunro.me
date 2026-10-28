@@ -31,9 +31,9 @@ interface Site {
 
 // Site configuration
 export const SITE: Site = {
-  website: "https://darrylmunro.me/",
+  website: "https://www.darrylmunro.nz/",
   author: "Darryl Munro",
-  profile: "https://darrylmunro.me/about",
+  profile: "https://www.darrylmunro.nz/about",
   desc: "Strong opinions, loosely held. Enterprise architecture, AI, neurodiversity, and pragmatic human systems.",
   title: "Darryl Munro",
   ogImage: "darryl-avatar.jpg",
