@@ -23,6 +23,9 @@ export interface Props {
   /** Path to a plain-markdown version of this page, advertised to AI crawlers. */
   markdownPath?: string;
   noindex?: boolean;
+  /** Set false for pages whose scripts must run on every visit (e.g. the model
+   *  explorer); navigation to and from them then does a full page load. */
+  clientRouter?: boolean;
 }
 
 const {
@@ -39,6 +42,7 @@ const {
   ogType,
   markdownPath,
   noindex = false,
+  clientRouter = true,
 } = Astro.props;
 
 const socialImageURL = new URL(ogImage, Astro.url);
@@ -148,7 +152,7 @@ const structuredData = structuredDataOverride ?? {
       )
     }
 
-    <ClientRouter />
+    {clientRouter && <ClientRouter />}
 
     <script is:inline src="/toggle-theme.js"></script>
   </head>

@@ -1,12 +1,18 @@
 ---
 /**
- * Interactive model explorer. A standalone page (no site chrome) because the
- * explorer is a full-screen working tool. The indexable content for search and
- * AI engines lives on the model overview page; this page is noindexed.
+ * Interactive model explorer, inside the site layout so it shares the header,
+ * footer, fonts and dark/light theme. The indexable content for search and AI
+ * engines lives on the model overview page; this page is noindexed.
+ *
+ * clientRouter is off: the explorer script must run on every visit, so links
+ * to and from this page do a full page load.
  */
-import "@/styles/model-explorer.css";
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
 import { SITE } from "@/config";
-import { buildExplorerData, explorerPath, getModels, modelPath } from "@/utils/models";
+import Layout from "@/layouts/Layout.astro";
+import "@/styles/model-explorer.css";
+import { buildExplorerData, getModels, modelPath } from "@/utils/models";
 
 export async function getStaticPaths() {
   return getModels().map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
@@ -19,28 +25,14 @@ const clientName = data.client;
 const backHref = modelPath(entry.slug);
 const backLabel = "Model overview";
 const downloadsHref = `${modelPath(entry.slug)}#downloads`;
-const canonical = new URL(explorerPath(entry.slug), Astro.site ?? SITE.website).href;
 // Escape "<" so the JSON can never close its script tag early.
 const json = JSON.stringify(data).replace(/</g, "\\u003c");
-const title = `${model.meta.pack?.name ?? entry.title} — Model Explorer`;
+const title = `${model.meta.pack?.name ?? entry.title} — Model Explorer | ${SITE.title}`;
 ---
 
-<!doctype html>
-<html lang="en-NZ">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>{title}</title>
-    <meta name="description" content={entry.description} />
-    <link rel="canonical" href={canonical} />
-    <meta name="robots" content="noindex, follow" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" />
-    <script is:inline src="/toggle-theme.js"></script>
-  </head>
-  <body>
+<Layout title={title} description={entry.description} noindex clientRouter={false}>
+  <Header />
+  <div class="mx relative z-1">
 <header class="tb">
   <div class="wrap backbar"><a href={backHref}>← {backLabel}</a><span class="muted">Fictional example overlay: <b>{clientName}</b></span></div>
   <div class="wrap tb-grid">
@@ -66,7 +58,7 @@ const title = `${model.meta.pack?.name ?? entry.title} — Model Explorer`;
   <div class="wrap" id="tabs"></div>
 </nav>
 
-<main class="wrap">
+<main id="main-content" class="wrap">
 <div class="banner" id="oldbanner" hidden></div>
 
 <section class="view" id="v-method" hidden>
@@ -222,15 +214,11 @@ const title = `${model.meta.pack?.name ?? entry.title} — Model Explorer`;
 
 </main>
 <footer><div class="wrap" id="foot"></div></footer>
+  </div>
+  <Footer />
 
-    <script type="application/json" id="model-data" data-suggest-to="darryl@darrylmunro.nz" set:html={json} />
-    <script>
-      import "@/scripts/model-explorer.js";
-    </script>
-  </body>
-</html>
-
-<style is:global>
-  .backbar { display: flex; flex-wrap: wrap; gap: 4px 16px; justify-content: space-between; padding-top: 12px; font-size: 0.88rem; }
-  .backbar a { text-decoration: none; }
-</style>
+  <script type="application/json" id="model-data" data-suggest-to="darryl@darrylmunro.nz" set:html={json} />
+  <script>
+    import "@/scripts/model-explorer.js";
+  </script>
+</Layout>
