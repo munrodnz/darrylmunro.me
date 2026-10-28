@@ -9,6 +9,7 @@ description: >-
   contractor pack and adds the company's own enums. Examples, context and open questions for the explorer
   are in explorer.yaml alongside this file.
 version: 0.2.0
+license: https://creativecommons.org/licenses/by/4.0/
 status: draft
 prefixes:
   linkml: https://w3id.org/linkml/

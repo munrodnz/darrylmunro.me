@@ -26,6 +26,7 @@ const published = new Date(entry.published);
 const fmt = (d: Date) => d.toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" });
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 const repoTree = "https://github.com/munrodnz/darrylmunro.me/tree/main/models";
+const LICENCE_URL = "https://creativecommons.org/licenses/by/4.0/";
 
 const areas = m.subject_areas
   .filter((s: any) => s.id !== "reference")
@@ -65,6 +66,7 @@ const jsonLd = {
       creator: { "@id": personId(site) },
       keywords: ["conceptual data model", "LinkML", "semantic layer", "infrastructure contractor", "New Zealand", "councils", "asset management"],
       spatialCoverage: { "@type": "Place", name: "New Zealand" },
+      license: LICENCE_URL,
       isBasedOn: (m.meta.sources ?? []).map((s: any) => ({ "@type": "CreativeWork", name: s.title, url: s.url })),
       distribution: downloads.map((d) => ({
         "@type": "DataDownload",
@@ -254,6 +256,10 @@ const eyebrow = "font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08e
         <p class="text-[17px] leading-[1.75] text-text-secondary mb-5">
           The overlay imports the pack by relative path, so keep the folder layout from
           <a href={repoTree} rel="noopener" class="text-accent">the source on GitHub</a> if you run the LinkML tools on it.
+        </p>
+        <p class="text-[17px] leading-[1.75] text-text-secondary mb-5">
+          Licensed under <a href={LICENCE_URL} rel="license noopener" class="text-accent">CC BY 4.0</a>. You can use and
+          adapt the model for any purpose, including commercially, as long as you credit Darryl Munro and link back here.
         </p>
         <ul class="divide-y divide-border border-y border-border">
           {downloads.map((d) => (

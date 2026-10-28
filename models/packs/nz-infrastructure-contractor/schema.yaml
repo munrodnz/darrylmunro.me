@@ -14,6 +14,7 @@ description: >-
   asset owners. Technology-free. Client overlays import this pack and add their own examples, context
   and enums.
 version: 0.2.0
+license: https://creativecommons.org/licenses/by/4.0/
 status: draft
 contributors:
 - https://www.darrylmunro.nz/about
