@@ -42,6 +42,10 @@ Lint reports style warnings only (enum values in plain English, relation slots w
 
 Models start as `draft: true` in `src/data/models.ts`: visible in `bun run dev` and Vercel previews, never in production. Set `draft: false` to publish; the overview joins the sitemap and `/llms.txt`, and the Data modelling guide shows it as a worked example.
 
+## Licence
+
+CC BY 4.0. See [LICENSE.md](LICENSE.md).
+
 ## Kōtuku Civil is fictional
 
 The overlay's organisation, councils, places, projects and dates are invented. Keep it that way: client models stay out of this public repository.

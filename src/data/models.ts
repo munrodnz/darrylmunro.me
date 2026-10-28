@@ -33,6 +33,6 @@ export const MODELS: ModelEntry[] = [
       "A conceptual data model for New Zealand contractors who build, operate and maintain water, parks, roading and facilities assets for councils. It is written in LinkML as a reusable industry pack, with a fictional company overlay showing how one organisation adds its own examples and lists. The explorer lets people who never open a YAML file read, question and improve it.",
     published: "2026-10-28",
     reviewed: "2026-10-28",
-    draft: true,
+    draft: false,
   },
 ];

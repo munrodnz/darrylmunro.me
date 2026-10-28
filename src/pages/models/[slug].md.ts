@@ -25,6 +25,7 @@ export const GET: APIRoute = ({ props, site }) => {
     `- Author: ${SITE.author}, Ōtepoti Dunedin, Aotearoa New Zealand`,
     `- Pack version: ${m.meta.pack?.version}`,
     `- Example overlay: ${data.client} (fictional organisation)`,
+    "- Licence: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
     `- Canonical: ${abs(modelPath(entry.slug))}`,
     `- Interactive explorer: ${abs(explorerPath(entry.slug))}`,
     `- LinkML pack schema: ${abs(`${modelPath(entry.slug)}/pack.yaml`)}`,
