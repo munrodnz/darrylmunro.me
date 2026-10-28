@@ -29,7 +29,7 @@ significantLine: >-
   overview for a managed transfer or integration platform.
 domain: integration
 boundary: external
-tags: ["sftp", "file transfer", "batch integration", "edi", "partner integration", "privacy"]
+tags: ["sftp", "file transfer", "batch integration", "edi", "partner integration", "privacy", "asset data"]
 related: []
 faq:
   - q: "Is secure file transfer outdated?"
@@ -40,6 +40,10 @@ faq:
     a: "If a file holds personal information and goes to an overseas party, check the cross-border disclosure rules in the Privacy Act 2020 before it leaves, and make sure you can tell what was sent if there is a breach."
 published: 2026-10-27
 reviewed: 2026-10-27
+# BEFORE PUBLISHING: the worked example was drafted by Claude from your
+# description of utilities work (sharing asset data with third parties).
+# Check every detail matches what actually happened, especially the outcome
+# in its last paragraph, then delete this note and set draft to false.
 draft: true
 inspiredBy:
   - name: "Secure File Transfer pattern at IT Architecture Patterns"
@@ -71,6 +75,7 @@ Most NZ organisations run this with one person who also does three other jobs, s
 
 - **Scale:** two or three partners do not need a platform. Twenty do.
 - **Privacy Act 2020:** files with personal information going offshore need a cross-border disclosure check first.
+- **Critical infrastructure:** location data for lines, substations, pipes and plant needs a deliberate decision about who sees what level of detail. Share what the requester needs for the job, not the whole network.
 - **Local estate:** many NZ organisations already have SharePoint and an Azure or AWS subscription. Use them before buying a dedicated product.
 - **Cost:** the main cost is staff time chasing failed files, not licences. Count that before comparing products.
 
@@ -88,6 +93,12 @@ Time saved chasing missing files should go back to the people who were chasing t
 
 ## Worked example
 
-<!-- ILLUSTRATIVE SCENARIO WRITTEN BY CLAUDE. Replace with an anonymised example from your own work before publishing. -->
+A South Island electricity distribution business shared asset data with a steady stream of outside parties: contractors planning work near the network, councils and developers scoping new subdivisions, and other utilities wanting to share trenches. Each needed to know what was in the ground and what they could work with.
 
-A South Island processor sent daily dispatch files to a freight partner from one staff member's mailbox. The first step cost nothing: name an owner, agree a 'missing file' phone number, and move the exchange to an SFTP endpoint the processor already had in its cloud subscription, with failure alerts going to a team channel. Missed dispatches dropped away within a month, and the conversation about a dedicated platform was parked until the partner count grows.
+Requests went to whoever in the GIS team picked them up. That person pulled an extract, saved it as a shapefile or spreadsheet, and emailed it or sent a shared link. Nobody could say later who held which version. Some extracts carried more detail about critical assets than the requester needed.
+
+The first step cost nothing. The team agreed what each type of requester could see, named one owner for external data requests, and wrote a short set of terms covering use and refresh.
+
+The second step used tools they already had. Standard extracts came out of the existing GIS platform on a schedule, landed in a controlled share with access per partner, and every download was logged.
+
+Partners worked from a known version, routine requests no longer needed an analyst's time, and a dedicated data-sharing platform was left until volumes justify it.
