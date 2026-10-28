@@ -1,0 +1,346 @@
+# Kōtuku Civil — overlay narrative for the model explorer. FICTIONAL organisation.
+# concept_overrides adds client-specific examples and notes to pack concepts;
+# those fields are shown with the client tag in the explorer.
+
+client: Kōtuku Civil
+meta:
+  model: Kōtuku Civil Conceptual Data Model
+  organisation_name: Kōtuku Civil
+  status: Worked example — fictional organisation
+  as_of: '2026-10-28'
+  prepared_by: Darryl Munro
+  basis: >-
+    A fictional council-controlled contractor, Kōtuku Civil, used to show how the NZ infrastructure contractor
+    pack and a client overlay work together. Every organisation, place, project and date in the overlay
+    is invented. The pack itself is general and reusable.
+  sources:
+  - title: Databricks Lakehouse Industry Data Models (GitHub)
+    url: https://github.com/databricks-industry-solutions/lakehouse-industry-data-models
+  short: Kōtuku Civil CDM
+purpose:
+  statement: >-
+    Give Kōtuku Civil's divisions, finance and the data platform one explicit, shared set of meanings
+    for the things the company does work on, for and with, so that reports, lakehouse tables and AI assistants
+    answer the same question the same way.
+  consumers:
+  - Data platform team deriving lakehouse silver tables, keys and tags
+  - Genie spaces and agents answering natural-language questions (context layer)
+  - Division managers, contract managers and finance using cross-division reporting
+  - Executive team and board, for strategy and performance reporting
+  failure_looks_like:
+  - '"Asset" counts mix client water mains with Kōtuku Civil''s own utes and mowers'
+  - '"Customer" counts ratepayers or facility users as clients'
+  - Water revenue attributed to the wrong owner either side of the 1 July 2026 transfer
+  - A Genie answer about "jobs" counts finance job numbers when the person meant work orders
+  - >-
+    A compliance obligation reported as met because the work order closed, not because the check was done
+assumptions:
+- id: A1
+  text: >-
+    Kōtuku Civil is an operator and contractor, not a utility. It does not own the networks it operates
+    and does not bill households. Treating it as a "utility" imports the wrong core concepts (customer
+    account, meter, tariff, bill).
+- id: A2
+  text: >-
+    Kōtuku drinking water and wastewater assets moved from Kōtuku District Council to Kōtuku Water Limited
+    on 1 July 2026. Whether the water services contract counterparty changed at the same time is not confirmed.
+- id: A3
+  text: >-
+    Divisions run their own operational systems; finance runs one ERP with job costing. Assumed for this
+    example.
+- id: A4
+  text: >-
+    For this example, the first technical consumer is a Databricks lakehouse with Genie. Power BI may
+    also consume the same definitions.
+context:
+  centre:
+    name: Kōtuku Civil Limited
+    note: >-
+      Fictional council-controlled contractor owned by Kōtuku District Council. Water services, parks,
+      roading, construction and electrical work across three districts.
+  groups:
+  - id: shareholder
+    name: Shareholder
+    flow: Ownership, dividend, statement of intent
+    parties:
+    - Kōtuku District Council
+  - id: clients
+    name: Clients
+    flow: Contracts in, claims and reporting out
+    parties:
+    - Kōtuku District Council
+    - Kōtuku Water Limited (to confirm — Q1)
+    - Tarapuka District Council
+    - Harakeke District Council
+    - NZ Transport Agency Waka Kotahi (prequalified)
+    - Developers and private clients
+  - id: owners
+    name: Asset owners
+    flow: Own the infrastructure Kōtuku Civil builds, operates and maintains
+    parties:
+    - Kōtuku Water Limited (drinking water and wastewater, from 1 July 2026)
+    - District councils (stormwater, parks, roads)
+    - NZTA (state highways)
+  - id: regulators
+    name: Regulators
+    flow: Rules, consents, audits
+    parties:
+    - Taumata Arowai (drinking water)
+    - The regional council (resource consents)
+    - WorkSafe (health and safety)
+  - id: suppliers
+    name: Suppliers & subcontractors
+    flow: Materials, plant hire, specialist labour
+    parties:
+    - Subcontractors
+    - Material suppliers
+    - Plant hire firms
+    - Laboratories
+  - id: public
+    name: Communities
+    flow: Requests through councils; use of parks, water services and council facilities
+    parties:
+    - Residents and ratepayers
+    - Transfer station users
+divisions:
+- id: water_parks
+  name: Water Services & Parks
+  note: Drinking and wastewater plants, parks and open spaces across three districts.
+  concepts:
+  - Contract
+  - ScheduleItem
+  - WorkRequest
+  - WorkOrder
+  - Site
+  - InfrastructureAsset
+  - InfrastructureSystem
+  - Crew
+  - PlantItem
+  - Competency
+  - Certification
+  - Obligation
+  - Inspection
+  - Sample
+  - Measurement
+  - NonConformance
+  - HealthSafetyEvent
+  - MaterialMovement
+  - TimeEntry
+  - AssetOwnership
+- id: construction
+  name: Construction
+  note: Surveying, design, groundworks, pipelines, subdivisions and road rebuilds.
+  concepts:
+  - Tender
+  - Contract
+  - ScheduleItem
+  - Variation
+  - PaymentClaim
+  - Project
+  - WorkOrder
+  - CostCollector
+  - Site
+  - InfrastructureAsset
+  - Crew
+  - PlantItem
+  - Material
+  - TimeEntry
+  - Obligation
+  - NonConformance
+  - HealthSafetyEvent
+  - Organisation
+  - PaymentSchedule
+  - AssetOwnership
+- id: roading
+  name: Roading
+  note: Road maintenance contracts for neighbouring councils; NZTA-prequalified; state highway work.
+  concepts:
+  - Contract
+  - ScheduleItem
+  - PaymentClaim
+  - WorkRequest
+  - WorkOrder
+  - Site
+  - InfrastructureAsset
+  - InfrastructureSystem
+  - Crew
+  - PlantItem
+  - Material
+  - Obligation
+  - Inspection
+  - HealthSafetyEvent
+  - TimeEntry
+  - PaymentSchedule
+  - AssetOwnership
+- id: electrical
+  name: Electrical & Building
+  note: Electrical services and commercial building maintenance.
+  concepts:
+  - Tender
+  - Contract
+  - WorkRequest
+  - WorkOrder
+  - Site
+  - InfrastructureAsset
+  - Competency
+  - Certification
+  - Material
+  - TimeEntry
+  - HealthSafetyEvent
+- id: corporate
+  name: Corporate & Finance
+  note: Shareholder reporting to Kōtuku District Council, finance, HR and QHSE.
+  concepts:
+  - Organisation
+  - OrganisationalUnit
+  - Person
+  - Contract
+  - PaymentClaim
+  - CostCollector
+  - CostTransaction
+  - TimeEntry
+  - Certification
+  - HealthSafetyEvent
+  - PaymentSchedule
+concept_overrides:
+  Organisation:
+    examples:
+    - Kōtuku District Council
+    - Kōtuku Water Limited
+    - Tarapuka District Council
+    - Taumata Arowai
+    - NZ Transport Agency Waka Kotahi
+  Person:
+    examples:
+    - a water treatment operator
+    - a subcontractor traffic controller
+    - a council contract manager
+  OrganisationalUnit:
+    examples:
+    - Water Services & Parks
+    - Construction
+    - Roading
+    - Electrical & Building
+    semantic_change: >-
+      Units are renamed and merged over time. Keep effective-from and effective-to dates so history still
+      rolls up.
+  Tender:
+    examples:
+    - Riverside cycleway stage two tender
+  Contract:
+    examples:
+    - Tarapuka roading maintenance contract
+    - Kōtuku township wastewater renewal contract
+    - Harakeke District services contract
+  ScheduleItem:
+    examples:
+    - mow reserve grass per 1000 m²
+    - weekly treatment plant compliance visit
+    - supply and lay 150 mm PE main per metre
+  Project:
+    examples:
+    - Kōtuku township wastewater renewal
+    - Riverside cycleway stage one
+  InfrastructureAsset:
+    examples:
+    - a Kōtuku water treatment plant
+    - a 150 mm water main
+    - a playground
+    - a section of sealed road
+    - a bore pump
+    non_examples:
+    - Kōtuku Civil's utes, mowers and excavators (Plant item)
+    semantic_change: >-
+      Kōtuku drinking water and wastewater assets changed owner on 1 July 2026. Ownership is time-bounded
+      (see relation R29).
+  InfrastructureSystem:
+    examples:
+    - the Kōtuku township drinking water supply scheme
+    - the Kōtuku township wastewater scheme
+    - Tarapuka district road network
+  Material:
+    examples:
+    - chlorine
+    - PE pipe
+    - aggregate
+    - line-marking paint
+  Competency:
+    examples:
+    - drinking water treatment operator qualification
+    - temporary traffic management
+    - confined space entry
+    - electrical registration
+  Obligation:
+    examples:
+    - >-
+      drinking water sampling at a supply at the frequency set in the Drinking Water Quality Assurance
+      Rules
+    - a resource consent discharge monitoring condition
+    - a contract response time for urgent faults
+  MaterialMovement:
+    examples:
+    - green waste delivered to a council transfer station
+  AssetOwnership:
+    examples:
+    - >-
+      Kōtuku District Council owned the Kōtuku water treatment plant until 30 June 2026; Kōtuku Water
+      Limited from 1 July 2026.
+  PaymentSchedule:
+    examples:
+    - A council's response to Kōtuku Civil's monthly roading maintenance claim.
+dilemmas:
+- id: D5
+  title: Asset ownership — attribute or time-bounded relation?
+  context: >-
+    Kōtuku drinking water and wastewater assets moved from the council to Kōtuku Water Limited on 1 July
+    2026; stormwater did not.
+  options:
+  - name: Current owner as an attribute on the asset
+    commits: Only today's truth.
+    consequence: Restated history; revenue and work before the transfer appears to be for the new owner.
+  - name: Ownership as a relation with valid-from and valid-to
+    commits: An ownership history table and rule RU2.
+    consequence: Correct as-at reporting either side of the transfer.
+  deciding_questions:
+  - Will anyone report across the transfer date? (Yes — annual reports and shareholder reporting.)
+  recommendation: Time-bounded relation. Apply the same pattern to contract client (R01) and crew membership.
+  conditions: None.
+open_questions:
+- id: Q1
+  owner: Commercial manager
+  q: >-
+    Since 1 July 2026 is the Kōtuku water services contract held with Kōtuku Water Limited, Kōtuku District
+    Council, or both (stormwater stayed with the council)?
+- id: Q2
+  owner: Finance
+  q: How do job numbers relate to contracts, projects and work orders in each division?
+- id: Q3
+  owner: Division operations managers
+  q: Where do work orders live — in Kōtuku Civil's systems, the client's, or both?
+- id: Q4
+  owner: Commercial manager
+  q: Are small-works purchase orders from clients managed as contracts?
+- id: Q5
+  owner: Asset & GIS lead
+  q: >-
+    Does Kōtuku Civil keep its own copy of client asset data (RAMM, council asset systems) or read it
+    at source?
+- id: Q6
+  owner: Division operations managers
+  q: Are crews fixed teams or daily allocations in each division?
+- id: Q7
+  owner: Operations and commercial
+  q: Which "completed" date does each contract KPI use?
+- id: Q8
+  owner: Finance
+  q: >-
+    Where Kōtuku Civil runs a facility for a council, who does the gate or user charge revenue belong
+    to?
+changelog:
+- version: 0.2.0
+  date: '2026-10-28'
+  changes:
+  - >-
+    Fictional Kōtuku Civil overlay created to show how a client overlay sits on the NZ infrastructure
+    contractor pack.
+  - Overlay carries examples, context, divisions, assumptions, open questions and two client enums.

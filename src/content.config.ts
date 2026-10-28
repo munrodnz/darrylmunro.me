@@ -126,6 +126,8 @@ const guides = defineCollection({
     links: z.array(z.object({ label: z.string(), url: z.string() })).default([]),
     relatedPatterns: z.array(reference("patterns")).default([]),
     relatedGuides: z.array(z.string()).default([]),
+    /** Data model slugs (src/data/models.ts); shown only once the model is published. */
+    relatedModels: z.array(z.string()).default([]),
     faq: z
       .array(z.object({ q: z.string(), a: z.string() }))
       .max(6)

@@ -1,0 +1,224 @@
+---
+/**
+ * Interactive model explorer, inside the site layout so it shares the header,
+ * footer, fonts and dark/light theme. The indexable content for search and AI
+ * engines lives on the model overview page; this page is noindexed.
+ *
+ * clientRouter is off: the explorer script must run on every visit, so links
+ * to and from this page do a full page load.
+ */
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+import "@/styles/model-explorer.css";
+import { buildExplorerData, getModels, modelPath } from "@/utils/models";
+
+export async function getStaticPaths() {
+  return getModels().map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const data = buildExplorerData(entry);
+const model = data.releases[data.releases.length - 1].model;
+const clientName = data.client;
+const backHref = modelPath(entry.slug);
+const backLabel = "Model overview";
+const downloadsHref = `${modelPath(entry.slug)}#downloads`;
+// Escape "<" so the JSON can never close its script tag early.
+const json = JSON.stringify(data).replace(/</g, "\\u003c");
+const title = `${model.meta.pack?.name ?? entry.title} — Model Explorer | ${SITE.title}`;
+---
+
+<Layout title={title} description={entry.description} noindex clientRouter={false}>
+  <Header />
+  <div class="mx relative z-1">
+<header class="tb">
+  <div class="wrap backbar"><a href={backHref}>← {backLabel}</a><span class="muted">Fictional example overlay: <b>{clientName}</b></span></div>
+  <div class="wrap tb-grid">
+    <div>
+      <div class="lbl" id="eyebrow">Conceptual data model · Semantic layer</div>
+      <h1 id="title">Model <span>Explorer</span></h1>
+      <p class="sub" id="purpose"></p>
+    </div>
+    <div class="tb-right">
+      <label class="verpick" for="ver">Version
+        <select id="ver" aria-label="Model version"></select>
+      </label>
+      <div class="tblock" aria-label="Model metadata">
+        <div><span>Model</span><b id="tb-model"></b></div>
+        <div><span>Pack</span><b id="tb-pack"></b></div>
+        <div><span>Status</span><b id="tb-status"></b></div>
+        <div><span>As at</span><b id="tb-asof"></b></div>
+      </div>
+    </div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Views">
+  <div class="wrap" id="tabs"></div>
+</nav>
+
+<main id="main-content" class="wrap">
+<div class="banner" id="oldbanner" hidden></div>
+
+<section class="view" id="v-method" hidden>
+  <div class="intro">
+    <div class="lbl">How to read this model</div>
+    <h2>Four levels, three lenses, two layers</h2>
+    <p>Each level answers a different question for a different audience. Lenses cut across the levels. Every concept comes from the <span class="layer layer-pack">Pack</span> — the industry model shared by every organisation of this kind — and may carry <span class="layer layer-client" data-clientname>Client</span> notes that only apply here.</p>
+  </div>
+  <div class="levels" id="levels"></div>
+  <div class="cols">
+    <div class="panel box">
+      <h3>Lenses</h3>
+      <dl style="margin:0;display:grid;gap:10px">
+        <div><dt class="lbl">Division</dt><dd style="margin:2px 0 0">Filter the conceptual model to the concepts one division uses. Shared concepts are where cross-division reporting breaks.</dd></div>
+        <div><dt class="lbl">Lexicon</dt><dd style="margin:2px 0 0">Words that mean different things to different groups — asset, plant, job, customer. This is the part a Genie space or agent needs most.</dd></div>
+        <div><dt class="lbl">Questions</dt><dd style="margin:2px 0 0">The questions the model must answer. Pick one on the Concepts view to see the path through the model.</dd></div>
+      </dl>
+    </div>
+    <div class="panel box">
+      <h3>How you can change it</h3>
+      <p>You don't need to edit files. Open a concept, select <b>Suggest a change</b>, and write what is wrong or missing in your own words. Your suggestion goes to the model owner by email, and accepted changes appear in the next version under <b>Changes</b>.</p>
+      <p class="muted" style="font-size:.9rem">Behind the page, the model is a LinkML schema in git: an industry pack plus a client overlay. <a href={downloadsHref}>Download the YAML</a>.</p>
+    </div>
+  </div>
+  <div class="panel box">
+    <h3>Using the model from code</h3>
+    <p>Pipelines, apps and agents read the same model this page shows. Every build produces:</p>
+    <div class="pipeline" aria-label="Build outputs">
+      <span class="n src mono">pack schema</span><span class="arr">+</span><span class="n src mono">client overlay</span><span class="arr">→</span><span class="n mono">build.py</span><span class="arr">→</span>
+      <span class="n">model.json</span><span class="n">OWL · SHACL</span><span class="n">SQL DDL · DBML</span><span class="n">JSON Schema · Pydantic</span><span class="n">Genie instructions</span><span class="n">data-quality rules</span><span class="n">this explorer</span>
+    </div>
+    <p>An MCP server answers questions such as “what does <i>job</i> mean here?” or “which concepts does this question need?” for Claude Code or any other agent while it builds a pipeline or semantic model.</p>
+  </div>
+</section>
+
+<section class="view" id="v-context" hidden>
+  <div class="intro">
+    <div class="lbl">Level 0 · Context</div>
+    <h2 id="ctx-h">Who the organisation works for, answers to, and works on behalf of</h2>
+    <p>The parties around the organisation and what flows between them.</p>
+  </div>
+  <div class="ctx" id="ctx"></div>
+</section>
+
+<section class="view" id="v-areas" hidden>
+  <div class="intro">
+    <div class="lbl">Level 1 · Subject areas</div>
+    <h2>Eight areas of meaning, each with an owner</h2>
+    <p>Line weight shows how many relations connect two areas. Heavily connected areas need their owners talking to each other. Select an area to jump to its concepts.</p>
+  </div>
+  <div class="panel l1graph"><div id="cy1" class="cyto" role="img" aria-label="Subject area relationship graph"></div></div>
+  <div class="areas" id="areas"></div>
+</section>
+
+<section class="view" id="v-model" hidden>
+  <div class="intro">
+    <div class="lbl">Level 2 · Conceptual model</div>
+    <h2>Concepts, relations and definitions</h2>
+    <p>Select a concept to read its definition, scope, identity and vagueness notes. Use the lenses to focus on one division or one question.</p>
+  </div>
+  <div class="toolbar">
+    <label for="f-div">Division <select id="f-div"><option value="">All divisions</option></select></label>
+    <label for="f-cq">Question <select id="f-cq" style="max-width:min(420px,70vw)"><option value="">None</option></select></label>
+    <label for="f-ref"><input type="checkbox" id="f-ref"> Show reference vocabularies</label>
+    <button type="button" id="f-fit">Fit to screen</button>
+  </div>
+  <div class="workspace">
+    <div class="panel graphbox"><div id="cy2" class="cyto" role="img" aria-label="Conceptual model graph"></div><div class="legend" id="legend"></div></div>
+    <aside class="panel detail" id="detail" aria-live="polite"></aside>
+  </div>
+</section>
+
+<section class="view" id="v-lexicon" hidden>
+  <div class="intro">
+    <div class="lbl">Lens · Lexicon</div>
+    <h2>Words that mean more than one thing here</h2>
+    <p>Each sense points at a different concept. Reports, table names and Genie instructions use the preferred label, never the bare word.</p>
+  </div>
+  <div class="lex" id="lex"></div>
+</section>
+
+<section class="view" id="v-mapping" hidden>
+  <div class="intro">
+    <div class="lbl">Level 3 · Logical mapping</div>
+    <h2>How well the Databricks industry models fit</h2>
+    <p>Each concept graded against the closest products in the Databricks Lakehouse Industry Data Models. Full: use as-is. Partial: extend. Misfit: the product means something else. Gap: nothing there.</p>
+  </div>
+  <div class="panel box" id="fitsum"></div>
+  <div class="toolbar"><div class="seg" id="fitfilter" role="group" aria-label="Filter by fit"></div></div>
+  <div class="tbl"><table><thead><tr><th>Concept</th><th>Fit</th><th>Candidate products</th><th>Change needed</th></tr></thead><tbody id="maprows"></tbody></table></div>
+</section>
+
+<section class="view" id="v-questions" hidden>
+  <div class="intro">
+    <div class="lbl">Lens · Competency questions</div>
+    <h2>What the model must be able to answer</h2>
+    <p>The model is complete for this version when every question can be answered by following the concepts and relations. Select a question to trace it on the model.</p>
+  </div>
+  <div class="panel cq" id="cqs"></div>
+</section>
+
+<section class="view" id="v-decisions" hidden>
+  <div class="intro">
+    <div class="lbl">Decisions</div>
+    <h2>Dilemmas, rules and open questions</h2>
+    <p>The modelling choices taken, the closed-world rules that become data-quality tests, and what still needs an answer from the organisation.</p>
+  </div>
+  <div id="dilemmas" style="display:grid;gap:10px"></div>
+  <div class="cols">
+    <div class="panel box"><h3>Assumptions</h3><div id="assumptions" style="display:grid;gap:10px"></div></div>
+    <div class="panel box"><h3>Rules (closed-world)</h3><p class="muted" style="font-size:.9rem">Anything not listed is open-world: a missing link means unknown, not false.</p><div id="rules" style="display:grid;gap:8px"></div></div>
+  </div>
+  <div class="tbl"><table><thead><tr><th style="width:4rem">ID</th><th>Open question</th><th>For</th></tr></thead><tbody id="oq"></tbody></table></div>
+</section>
+
+<section class="view" id="v-changes" hidden>
+  <div class="intro">
+    <div class="lbl">Log · Versions</div>
+    <h2>What changed between versions</h2>
+    <p>Pick any two versions. Every added, removed or reworded concept, relation, term and question is listed, followed by the release notes.</p>
+  </div>
+  <div class="cmpbar">
+    <label for="cmp-a">From <select id="cmp-a"></select></label>
+    <label for="cmp-b">To <select id="cmp-b"></select></label>
+    <span class="muted" id="cmp-sum"></span>
+  </div>
+  <div class="chg" id="chg"></div>
+</section>
+
+<section class="view" id="v-proposals" hidden>
+  <div class="intro">
+    <div class="lbl">Log · Proposals</div>
+    <h2>Suggest a change</h2>
+    <p>Say what is wrong, missing or unclear, in your own words. You don't need to know the modelling terms. Sending opens your email app with the suggestion ready to go to the model owner.</p>
+  </div>
+  <form class="panel pform" id="pform" novalidate>
+    <div class="row">
+      <label for="p-concept">Concept <select id="p-concept"></select></label>
+      <label for="p-kind">What kind of change <select id="p-kind">
+        <option value="definition">The definition is wrong or unclear</option>
+        <option value="term">We use a different word for this</option>
+        <option value="example">An example is wrong or missing</option>
+        <option value="relation">A link to another concept is wrong or missing</option>
+        <option value="new">A concept is missing altogether</option>
+        <option value="other">Something else</option>
+      </select></label>
+    </div>
+    <label for="p-text">Your suggestion <textarea id="p-text" placeholder="For example: crews call a work order a 'docket', and 'completed' for us means signed off by the supervisor."></textarea></label>
+    <label for="p-why">Why it matters (optional) <input type="text" id="p-why" placeholder="Which report, decision or question does this affect?"></label>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button type="submit" class="primary" id="p-send">Email suggestion</button><span class="msg" id="p-msg" aria-live="polite"></span></div>
+  </form>
+</section>
+
+</main>
+<footer><div class="wrap" id="foot"></div></footer>
+  </div>
+  <Footer />
+
+  <script type="application/json" id="model-data" data-suggest-to="darryl@darrylmunro.nz" set:html={json} />
+  <script>
+    import "@/scripts/model-explorer.js";
+  </script>
+</Layout>

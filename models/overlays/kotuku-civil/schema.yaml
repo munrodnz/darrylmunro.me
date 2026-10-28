@@ -1,0 +1,45 @@
+# Kōtuku Civil — client overlay (LinkML). FICTIONAL organisation.
+# Imports the pack; adds only what is specific to this company.
+
+id: https://www.darrylmunro.nz/models/nz-infrastructure-contractor/overlays/kotuku-civil
+name: kotuku_civil
+title: Kōtuku Civil overlay (fictional)
+description: >-
+  Client overlay for Kōtuku Civil, a fictional council-controlled contractor. Imports the NZ infrastructure
+  contractor pack and adds the company's own enums. Examples, context and open questions for the explorer
+  are in explorer.yaml alongside this file.
+version: 0.2.0
+status: draft
+prefixes:
+  linkml: https://w3id.org/linkml/
+  kotuku: https://www.darrylmunro.nz/models/nz-infrastructure-contractor/overlays/kotuku-civil/
+default_prefix: kotuku
+default_range: string
+imports:
+- linkml:types
+- ../../packs/nz-infrastructure-contractor/schema
+enums:
+  KotukuDistrict:
+    title: Kōtuku Civil districts
+    description: Territorial areas Kōtuku Civil works in
+    inherits:
+    - TerritorialArea
+    in_subset:
+    - reference
+    permissible_values:
+      Kōtuku: {}
+      Tarapuka: {}
+      Harakeke: {}
+    annotations:
+      owner_role: Data governance group
+  KotukuServiceType:
+    title: Kōtuku Civil service types
+    description: Pack service types plus Kōtuku Civil-only services
+    inherits:
+    - ServiceType
+    in_subset:
+    - reference
+    permissible_values:
+      Backflow testing: {}
+    annotations:
+      owner_role: Commercial manager

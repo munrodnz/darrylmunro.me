@@ -1,0 +1,1645 @@
+# NZ infrastructure contractor — industry pack (LinkML)
+# Concepts are classes, relations are slots, reference vocabularies are enums,
+# subject areas are subsets. Definition detail (scope, excludes, identity,
+# vagueness) lives in annotations. Fit against the Databricks Lakehouse
+# Industry Data Models is recorded as mappings: exact = full fit,
+# close = partial, related = misfit or gap (see annotations for which).
+
+id: https://www.darrylmunro.nz/models/nz-infrastructure-contractor
+name: nz_infrastructure_contractor
+title: NZ infrastructure contractor
+description: >-
+  Conceptual data model for New Zealand infrastructure contractors: organisations that build, operate
+  and maintain water, wastewater, parks, roading and facilities assets on behalf of councils and other
+  asset owners. Technology-free. Client overlays import this pack and add their own examples, context
+  and enums.
+version: 0.2.0
+status: draft
+contributors:
+- https://www.darrylmunro.nz/about
+prefixes:
+  linkml: https://w3id.org/linkml/
+  nzic: https://www.darrylmunro.nz/models/nz-infrastructure-contractor/
+  dbxwater: https://github.com/databricks-industry-solutions/lakehouse-industry-data-models#water.
+  dbxcon: https://github.com/databricks-industry-solutions/lakehouse-industry-data-models#construction.
+  dbxwaste: https://github.com/databricks-industry-solutions/lakehouse-industry-data-models#waste.
+default_prefix: nzic
+default_range: string
+imports:
+- linkml:types
+subsets:
+  parties:
+    title: Parties & organisation
+    description: Who we deal with, and how the contractor itself is organised.
+    annotations:
+      owner_role: Finance (client and supplier master) with HR (people)
+      colour: '#2f6f9f'
+  commercial:
+    title: Commercial
+    description: Why we get paid — tenders, contracts, prices, changes and claims.
+    annotations:
+      owner_role: Commercial / contracts manager
+      colour: '#8a5a00'
+  work:
+    title: Work
+    description: What we are asked to do and how it is organised and charged.
+    annotations:
+      owner_role: Division operations managers (shared)
+      colour: '#b2452b'
+  places:
+    title: Places & infrastructure
+    description: Where we work and the client infrastructure we work on.
+    annotations:
+      owner_role: Asset & GIS lead, reading from asset owners' registers
+      colour: '#2e7d4f'
+  resources:
+    title: Resources
+    description: People, crews, plant, materials and the capability to use them.
+    annotations:
+      owner_role: HR (people, competency) and plant manager (plant)
+      colour: '#6a4c93'
+  compliance:
+    title: Compliance, quality & safety
+    description: What must be done, what was checked, what went wrong.
+    annotations:
+      owner_role: QHSE manager with the water compliance lead
+      colour: '#9c2f6b'
+  finance:
+    title: Financial performance
+    description: Time, cost and how it rolls up to margin.
+    annotations:
+      owner_role: Finance
+      colour: '#4f5b66'
+  reference:
+    title: Reference vocabularies
+    description: Controlled lists that classify the concepts above.
+    annotations:
+      owner_role: Data governance group
+      colour: '#7a7a2e'
+classes:
+  Organisation:
+    title: Organisation
+    description: >-
+      A legally or administratively distinct body — company, council, council-controlled organisation,
+      government agency or trust — that the contractor deals with or reports on.
+    aliases:
+    - company
+    - entity
+    - counterparty
+    - council
+    - CCO
+    - agency
+    in_subset:
+    - parties
+    slots:
+    - shareholder_of
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      scope: >-
+        Includes the contractor itself. Client, asset owner, regulator, supplier, subcontractor and shareholder
+        are roles an organisation plays through relations, not kinds of organisation.
+      excludes: The contractor's internal divisions and teams (see Organisational unit).
+      non_examples: an operations division | a household that rings the council
+      identity: NZBN where one exists; otherwise legal name plus registration number.
+      owner_role: Finance
+      reference_model_fit: partial
+      reference_model_change: >-
+        Reference models split one party into many role tables. Consolidate to one organisation table
+        with role relations.
+    close_mappings:
+    - dbxcon:client.account
+    - dbxcon:contract.party
+    - dbxwater:compliance.regulatory_agency
+    - dbxwaste:contract.municipality
+  Person:
+    title: Person
+    description: An individual human that the contractor records for work, safety, competency or contact
+      purposes.
+    aliases:
+    - staff member
+    - worker
+    - operator
+    - contact
+    - employee
+    in_subset:
+    - parties
+    slots:
+    - crews
+    - engaged_by
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      scope: >-
+        One record per human regardless of roles held. An employee who also reports a fault is still one
+        person. Employee and subcontractor worker are roles via the "engaged by" relation.
+      excludes: System user accounts and logins.
+      identity: HR or contractor-management system ID; never name alone.
+      notes: Privacy Act 2020 — record only what the purpose needs.
+      owner_role: HR
+      reference_model_fit: partial
+      reference_model_change: Water model's customer.person is a ratepayer — do not use.
+    close_mappings:
+    - dbxcon:workforce.craft_worker
+    - dbxcon:client.contact
+  OrganisationalUnit:
+    title: Organisational unit
+    description: >-
+      A part of the contractor's own internal structure — division, team or depot — to which people, crews,
+      contracts and costs are assigned.
+    aliases:
+    - division
+    - department
+    - team
+    - depot
+    in_subset:
+    - parties
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      excludes: Cost centres (a finance construct that may map many-to-one onto a unit).
+      identity: HR/ERP unit code with effective dates.
+      owner_role: HR
+      reference_model_fit: gap
+      reference_model_change: Cost centre is not a unit. Add an org-unit table with effective dates.
+    related_mappings:
+    - dbxcon:finance.cost_center
+  Crew:
+    title: Crew
+    description: >-
+      A named group of people, usually with assigned plant, that is scheduled and dispatched together
+      to carry out work.
+    aliases:
+    - gang
+    - team
+    - squad
+    in_subset:
+    - parties
+    slots:
+    - crew_unit
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      scope: A single operator dispatched alone is a crew of one.
+      identity: Crew code. Identity persists while membership changes.
+      vagueness: >-
+        Combinatory — some divisions run fixed crews, others assemble them daily. Decide per division
+        whether a daily allocation is a crew. Owner: division operations manager.
+      owner_role: Division operations manager
+      reference_model_fit: full
+      reference_model_change: Use as-is.
+    exact_mappings:
+    - dbxcon:workforce.crew
+    - dbxcon:workforce.crew_assignment
+  Tender:
+    title: Tender
+    description: >-
+      An offer the contractor prepares in response to a prospective client's request, which may or may
+      not result in a contract.
+    aliases:
+    - bid
+    - proposal
+    - quote
+    - RFT response
+    - pricing submission
+    in_subset:
+    - commercial
+    slots:
+    - prospective_client
+    - resulting_contract
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      excludes: The client's request document itself (held as an attribute or document link).
+      vagueness: >-
+        Degree — "probability of win" is a judgement. Store it with who set it and when; never treat it
+        as a measured fact.
+      owner_role: Commercial manager
+      reference_model_fit: full
+      reference_model_change: Use as-is.
+    exact_mappings:
+    - dbxcon:bid.tender
+    - dbxcon:bid.estimate
+  Contract:
+    title: Contract
+    description: >-
+      A legally binding agreement under which the contractor delivers services or works for a client organisation
+      in return for payment.
+    aliases:
+    - agreement
+    - head contract
+    - maintenance contract
+    - purchase order (small works)
+    in_subset:
+    - commercial
+    slots:
+    - client
+    - lead_unit
+    - schedule_items
+    - covers
+    - services
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      scope: >-
+        Multi-year operations and maintenance contracts, construction contracts (for example NZS 3910
+        forms), and small-works purchase orders issued by a client.
+      excludes: >-
+        Agreements where the contractor is the buyer (subcontracts, supply, plant hire). These are procurement
+        commitments — out of scope for v0.1.
+      identity: The contractor's contract number; client's reference held as an alternative identifier.
+      vagueness: >-
+        "Active contract" — make crisp. Proposed rule: commencement date reached and neither expiry nor
+        (for construction) end of the defects liability period has passed. Owner: commercial manager.
+      owner_role: Commercial manager
+      reference_model_fit: partial
+      reference_model_change: >-
+        Water model has no client contract at all (it assumes the operator owns the network). Extend construction.contract.agreement
+        to operations contracts.
+    close_mappings:
+    - dbxcon:contract.agreement
+    - dbxwaste:contract.contract
+  ScheduleItem:
+    title: Schedule item
+    description: >-
+      A priced line in a contract that defines a unit of work and the basis on which it is paid (rate
+      per unit, lump sum or provisional sum).
+    aliases:
+    - pay item
+    - schedule of rates item
+    - SOR item
+    - BOQ line
+    - rate
+    in_subset:
+    - commercial
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      identity: Contract number plus item reference.
+      owner_role: Commercial manager
+      reference_model_fit: partial
+      reference_model_change: Merge into one schedule-item product keyed to contract.
+    close_mappings:
+    - dbxcon:bid.boq_line
+    - dbxwaste:contract.rate_line
+  Variation:
+    title: Variation
+    description: An agreed change to a contract's scope, price or time after award.
+    aliases:
+    - change order
+    - VO
+    - contract change
+    - extension of time
+    in_subset:
+    - commercial
+    slots:
+    - amends_contract
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      scope: Includes extensions of time once agreed. Claimed but unagreed variations carry a status.
+      owner_role: Commercial manager
+      reference_model_fit: full
+      reference_model_change: Use; treat EOT as a variation type.
+    exact_mappings:
+    - dbxcon:contract.contract_change_order
+    - dbxcon:contract.eot_claim
+  PaymentClaim:
+    title: Payment claim
+    description: A claim the contractor makes to a client for payment for work done in a period under
+      a contract.
+    aliases:
+    - progress claim
+    - monthly claim
+    - claim
+    in_subset:
+    - commercial
+    slots:
+    - claimed_under
+    - claimed_items
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      scope: >-
+        For construction contracts, use the meaning in the Construction Contracts Act 2002. The client's
+        response (payment schedule or certificate) is a separate thing, not the same record.
+      excludes: The tax invoice, which finance may raise from the claim.
+      owner_role: Commercial manager
+      reference_model_fit: partial
+      reference_model_change: >-
+        progress_billing is the invoice side. The client's response is now its own concept, Payment schedule.
+    close_mappings:
+    - dbxcon:finance.progress_billing
+  WorkRequest:
+    title: Work request
+    description: >-
+      A request or trigger for work — from a client, from the public through a client, from an alarm,
+      or from the contractor's own inspection — before it is accepted as instructed work.
+    aliases:
+    - service request
+    - CSR
+    - fault
+    - call-out
+    - request for service
+    - complaint
+    in_subset:
+    - work
+    slots:
+    - raised_by
+    - resulting_work_orders
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      excludes: The work order that may result.
+      identity: Originating system plus its reference (for example a council CSR number).
+      owner_role: Division operations manager
+      reference_model_fit: partial
+      reference_model_change: Water model's customer.complaint is ratepayer-facing — misfit.
+    close_mappings:
+    - dbxwaste:customer.service_request
+  WorkOrder:
+    title: Work order
+    description: >-
+      An instruction, authorised under a contract, to carry out a defined piece of work at a site or on
+      an infrastructure asset within a set timeframe.
+    aliases:
+    - job (crews)
+    - WO
+    - task
+    - work instruction
+    - docket
+    in_subset:
+    - work
+    slots:
+    - authorised_under
+    - work_site
+    - acts_on
+    - part_of_project
+    - charged_to
+    - assigned_crew
+    - required_competencies
+    - work_type
+    - service_type
+    attributes:
+      done_date:
+        title: physically done
+        range: date
+        description: Date the crew finished the work on site.
+      closed_date:
+        title: closed
+        range: date
+        description: Date the work order was closed in the system.
+      claimed_date:
+        title: claimed
+        range: date
+        description: Date the work was included in a payment claim.
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      scope: Planned, reactive, emergency and capital work, distinguished by Work type.
+      excludes: Project (a larger undertaking); Cost collector (finance's "job number").
+      identity: Work order number in the issuing system; client reference as alternative identifier.
+      vagueness: >-
+        "Completed" has three meanings: physically done, closed in the system, and claimed. Model them
+        as separate dated statuses. Owner: division operations manager with commercial manager.
+      owner_role: Division operations manager
+      reference_model_fit: misfit
+      reference_model_change: >-
+        Owner-operator framing — links to billing account and service agreement, no contract. Rebuild
+        around R11 (authorised under contract).
+    related_mappings:
+    - dbxwater:asset.work_order
+  Project:
+    title: Project
+    description: >-
+      A temporary, budgeted undertaking with a defined scope and completion that delivers new, renewed
+      or upgraded infrastructure, usually under a construction contract.
+    aliases:
+    - job (construction)
+    - capital work
+    - works
+    in_subset:
+    - work
+    slots:
+    - delivered_under
+    - project_cost_collectors
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      non_examples: a year of reserve mowing under a maintenance contract
+      owner_role: Project manager
+      reference_model_fit: full
+      reference_model_change: Use as-is.
+    exact_mappings:
+    - dbxcon:project.construction_project
+  CostCollector:
+    title: Cost collector
+    description: >-
+      A finance structure — job number with cost codes — to which costs and revenue are posted so that
+      performance can be measured.
+    aliases:
+    - job (finance)
+    - job number
+    - cost code
+    - WBS element
+    in_subset:
+    - work
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      scope: >-
+        Finance construct. Maps to a contract, a project or a group of work orders depending on how each
+        division sets up jobs. The mapping pattern is recorded, not assumed.
+      identity: ERP job number plus cost code.
+      owner_role: Finance
+      reference_model_fit: partial
+      reference_model_change: Record the job-to-contract/project mapping pattern explicitly.
+    close_mappings:
+    - dbxcon:finance.cost_code
+    - dbxcon:project.wbs_element
+  Site:
+    title: Site
+    description: >-
+      A defined place where the contractor carries out work — a property, reserve, road section, plant
+      compound or sampling point.
+    aliases:
+    - location
+    - address
+    - reserve
+    - depot
+    - sampling point
+    - road section
+    in_subset:
+    - places
+    slots:
+    - within_site
+    - district
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      scope: Sites nest (a sportsfield within a reserve; a sampling tap within a plant compound).
+      identity: Client location reference or a geometry. Street addresses are labels for a site, not its
+        identity.
+      vagueness: Granularity is a choice. Record which level each source uses rather than forcing one.
+      owner_role: Asset & GIS lead
+      reference_model_fit: partial
+      reference_model_change: Add nesting (R33) and district.
+    close_mappings:
+    - dbxwater:asset.location
+    - dbxcon:site.work_front
+  InfrastructureAsset:
+    title: Infrastructure asset
+    description: >-
+      A physical item of infrastructure owned by a client or asset owner, that the contractor builds,
+      operates, maintains or renews.
+    aliases:
+    - asset (operations)
+    - network asset
+    - facility
+    - treatment plant
+    - plant (water sense)
+    in_subset:
+    - places
+    slots:
+    - part_of_system
+    - component_of
+    - located_at
+    - asset_class
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      excludes: >-
+        The authoritative register stays with the owner (council asset system, RAMM for roads). The contractor
+        holds a reference copy keyed on the owner's ID.
+      identity: Asset owner's asset ID. Ownership can change; identity does not.
+      owner_role: Asset & GIS lead
+      reference_model_fit: misfit
+      reference_model_change: water.asset.registry includes vehicles — violates RU3. Split; add time-bounded
+        ownership.
+    related_mappings:
+    - dbxwater:asset.registry
+    - dbxwater:treatment.facility
+    - dbxwater:distribution.pipe_main
+  InfrastructureSystem:
+    title: Infrastructure system
+    description: A set of connected infrastructure assets managed as a unit to deliver a service to a
+      defined area.
+    aliases:
+    - scheme
+    - water supply
+    - network
+    - wastewater scheme
+    - road network
+    in_subset:
+    - places
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      notes: Drinking water compliance is assessed per supply, so this is not optional.
+      owner_role: Asset & GIS lead
+      reference_model_fit: gap
+      reference_model_change: Pressure zones and DMAs are not supply schemes. Add a system table.
+    related_mappings:
+    - dbxwater:distribution.pressure_zone
+    - dbxwater:distribution.dma
+  PlantItem:
+    title: Plant item
+    description: A vehicle or piece of equipment owned, leased or hired by the contractor and used to
+      carry out work.
+    aliases:
+    - plant
+    - plant & equipment
+    - P&E
+    - fleet
+    - vehicle
+    - equipment
+    - asset (plant team / finance)
+    in_subset:
+    - resources
+    disjoint_with:
+    - InfrastructureAsset
+    slots:
+    - plant_source
+    - plant_unit
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      non_examples: a water treatment plant (Infrastructure asset)
+      identity: Fleet number; registration and serial number as alternatives.
+      owner_role: Plant manager
+      reference_model_fit: full
+      reference_model_change: Rename — the product is called "asset", which collides with the lexicon.
+    exact_mappings:
+    - dbxcon:equipment.asset
+  Material:
+    title: Material
+    description: A consumable or supplied product used or installed in carrying out work.
+    aliases:
+    - stock
+    - consumable
+    - part
+    - product
+    in_subset:
+    - resources
+    slots:
+    - used_on
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      identity: >-
+        Product code. A material that is installed (pipe) becomes part of an infrastructure asset; record
+        the installation, do not keep tracking the material as stock.
+      owner_role: Procurement
+      reference_model_fit: partial
+      reference_model_change: Add usage on work orders.
+    close_mappings:
+    - dbxcon:procurement.material_catalog
+  Competency:
+    title: Competency
+    description: A defined capability that a person must hold to do certain work.
+    aliases:
+    - qualification
+    - ticket
+    - licence type
+    - skill
+    in_subset:
+    - resources
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      owner_role: HR
+      reference_model_fit: partial
+      reference_model_change: Add NZ competencies (water operator, TTM).
+    close_mappings:
+    - dbxcon:workforce.skill_trade
+  Certification:
+    title: Certification
+    description: >-
+      The fact that a specific person holds a specific competency for a stated period, evidenced by a
+      credential.
+    aliases:
+    - ticket held
+    - licence
+    - training record
+    in_subset:
+    - resources
+    slots:
+    - held_by
+    - evidences
+    attributes:
+      expiry_date:
+        title: expiry date
+        range: date
+        description: Date the credential lapses.
+      non_expiring:
+        title: non-expiring
+        range: boolean
+        description: >-
+          True only when the credential has no expiry. Rule RU4: an empty expiry date is an error, not
+          'never'.
+    annotations:
+      concept_type: reified-relation
+      rigidity: anti-rigid
+      notes: Reified because it carries its own dates, issuer and evidence.
+      owner_role: HR
+      reference_model_fit: full
+      reference_model_change: Merge the two.
+    exact_mappings:
+    - dbxcon:workforce.craft_certification
+    - dbxcon:equipment.operator_certification
+  Obligation:
+    title: Obligation
+    description: >-
+      Something the contractor, or the asset owner it acts for, must do by a time or at a frequency, because
+      of a regulation, resource consent condition or contract term.
+    aliases:
+    - compliance requirement
+    - monitoring requirement
+    - consent condition
+    - KPI
+    - performance requirement
+    in_subset:
+    - compliance
+    slots:
+    - imposed_by
+    - arises_from
+    - applies_to
+    annotations:
+      concept_type: class
+      rigidity: rigid
+      vagueness: >-
+        "Overdue" needs a tolerance window per obligation (same day? within the week?). Record it on the
+        obligation; do not hard-code it in reports.
+      owner_role: QHSE manager / water compliance lead
+      reference_model_fit: partial
+      reference_model_change: >-
+        US rule sets (EPA, SDWA) throughout. Replace with Taumata Arowai rules, regional council consent
+        conditions, contract terms.
+    close_mappings:
+    - dbxwater:compliance.regulatory_requirement
+    - dbxwater:compliance.permit_condition
+    - dbxwaste:contract.performance_obligation
+  Inspection:
+    title: Inspection
+    description: >-
+      An observation made by a person at a site or of an asset, to check condition or compliance, with
+      its result recorded.
+    aliases:
+    - compliance check
+    - site visit
+    - audit
+    - condition assessment
+    - round
+    in_subset:
+    - compliance
+    slots:
+    - checks
+    - inspection_site
+    - performed_by
+    - done_under
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      excludes: >-
+        Inspections carried out by a regulator on the contractor (record as an inspection with the regulator
+        as performing organisation).
+      owner_role: QHSE manager
+      reference_model_fit: partial
+      reference_model_change: Three products for one concept; unify with an inspection type.
+    close_mappings:
+    - dbxwater:asset.inspection_event
+    - dbxwater:asset.condition_assessment
+    - dbxwater:compliance.regulatory_inspection
+  Sample:
+    title: Sample
+    description: A physical quantity of water, wastewater or other material taken at a site at a time
+      for analysis.
+    aliases:
+    - grab sample
+    - water sample
+    in_subset:
+    - compliance
+    slots:
+    - sample_site
+    - sampled_for
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      owner_role: Water compliance lead
+      reference_model_fit: full
+      reference_model_change: Use; replace US limits.
+    exact_mappings:
+    - dbxwater:quality.water_sample
+  Measurement:
+    title: Measurement
+    description: >-
+      A value for a named parameter, with unit and method, obtained by analysing a sample or by a field
+      or online instrument.
+    aliases:
+    - result
+    - test result
+    - lab result
+    - reading
+    - field test
+    in_subset:
+    - compliance
+    slots:
+    - result_for
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      scope: Continuous telemetry (SCADA) is summarised to measurements; raw time series stay in the historian.
+      owner_role: Water compliance lead
+      reference_model_fit: partial
+      reference_model_change: Unify with a method attribute.
+    close_mappings:
+    - dbxwater:quality.analytical_result
+    - dbxwater:treatment.process_reading
+  NonConformance:
+    title: Non-conformance
+    description: >-
+      A recorded failure to meet a requirement — a measured value outside a limit, an obligation missed,
+      or work not to specification.
+    aliases:
+    - NCR
+    - exceedance
+    - breach
+    - defect
+    - non-compliance
+    in_subset:
+    - compliance
+    slots:
+    - raised_from
+    - breaches
+    - remedied_by
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      scope: >-
+        Exceedance (a value over a limit) and non-compliance (a legal finding) are different. Keep a type
+        value for each; never merge them.
+      owner_role: QHSE manager
+      reference_model_fit: partial
+      reference_model_change: Unify with a type value; keep exceedance and non-compliance distinct.
+    close_mappings:
+    - dbxwater:quality.exceedance
+    - dbxwater:compliance.violation
+    - dbxcon:quality.ncr
+  HealthSafetyEvent:
+    title: Health & safety event
+    description: >-
+      An occurrence during the contractor's work that caused, or could have caused, harm to people, property
+      or the environment.
+    aliases:
+    - incident
+    - near miss
+    - accident
+    - notifiable event
+    - environmental incident
+    in_subset:
+    - compliance
+    slots:
+    - event_site
+    - during_work
+    - involved
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      scope: Notifiable events under the Health and Safety at Work Act 2015 are a flagged subset.
+      vagueness: Severity is degree-vague. Use the QHSE severity matrix as the owned, documented threshold.
+      owner_role: QHSE manager
+      reference_model_fit: full
+      reference_model_change: Add HSWA notifiable flag.
+    exact_mappings:
+    - dbxcon:safety.incident
+  MaterialMovement:
+    title: Material movement
+    description: >-
+      A recorded transfer of material into or out of a facility, by weight or volume, classified by material
+      stream.
+    aliases:
+    - weighbridge ticket
+    - tonnage
+    - gate transaction
+    - load
+    in_subset:
+    - compliance
+    slots:
+    - movement_site
+    - stream
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      notes: Members of the public using a resource recovery facility are not clients.
+      owner_role: Resource recovery manager
+      reference_model_fit: partial
+      reference_model_change: Use scale_transaction; drop landfill specifics.
+    close_mappings:
+    - dbxwaste:collection.scale_transaction
+    - dbxwaste:landfill.tonnage_receipt
+  TimeEntry:
+    title: Time entry
+    description: A record of the time a person or plant item spent on a work order or cost collector on
+      a date.
+    aliases:
+    - timesheet line
+    - hours
+    - plant hours
+    - docket
+    in_subset:
+    - finance
+    slots:
+    - time_of
+    - booked_to
+    - costed_as
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      owner_role: Finance (payroll) with division operations managers
+      reference_model_fit: full
+      reference_model_change: Merge people and plant time.
+    exact_mappings:
+    - dbxcon:workforce.timesheet_line
+    - dbxcon:equipment.hours
+  CostTransaction:
+    title: Cost transaction
+    description: A financial amount posted to a cost collector and classified by cost type.
+    aliases:
+    - cost
+    - actuals
+    - journal line
+    in_subset:
+    - finance
+    slots:
+    - posted_to
+    - cost_type
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      owner_role: Finance
+      reference_model_fit: full
+      reference_model_change: Use as-is.
+    exact_mappings:
+    - dbxcon:finance.job_cost_transaction
+  AssetOwnership:
+    title: Asset ownership
+    description: The fact that a specific organisation owns a specific infrastructure asset for a stated
+      period.
+    aliases:
+    - owner history
+    - custodianship
+    in_subset:
+    - places
+    slots:
+    - owned_asset
+    - owner
+    attributes:
+      valid_from:
+        title: valid from
+        range: date
+        required: true
+        description: First date on which the fact holds.
+      valid_to:
+        title: valid to
+        range: date
+        description: Last date on which the fact holds. Empty means it still holds.
+    annotations:
+      concept_type: reified-relation
+      rigidity: anti-rigid
+      scope: >-
+        Reified so ownership can change without the asset changing identity, and so as-at reporting either
+        side of a transfer is correct. Rule RU2: periods for one asset never overlap.
+      identity: Asset ID plus valid-from date.
+      owner_role: Asset & GIS lead
+      reference_model_fit: gap
+      reference_model_change: No reference product keeps ownership history. Add an ownership table keyed
+        on asset and valid-from.
+  PaymentSchedule:
+    title: Payment schedule
+    description: >-
+      A client's written response to a payment claim, stating the amount it will pay and, where that is
+      less than claimed, the reasons.
+    aliases:
+    - payment certificate
+    - certificate
+    - client response
+    in_subset:
+    - commercial
+    slots:
+    - responds_to
+    annotations:
+      concept_type: event
+      rigidity: rigid
+      scope: >-
+        Uses the meaning in the Construction Contracts Act 2002 for construction contracts. Kept separate
+        from the claim because the two amounts differ and the difference is what commercial teams chase.
+      owner_role: Commercial manager
+      reference_model_fit: partial
+      reference_model_change: >-
+        payment_certificate assumes an engineer or architect certifies. Rename and add the scheduled amount
+        and reasons.
+    close_mappings:
+    - dbxcon:contract.payment_certificate
+slots:
+  shareholder_of:
+    title: shareholder of
+    domain: Organisation
+    range: Organisation
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R58
+      cardinality: n:m
+      characteristics: temporal
+      role: shareholder
+  crews:
+    title: member of
+    domain: Person
+    range: Crew
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R22
+      cardinality: n:m
+      characteristics: temporal
+  engaged_by:
+    title: engaged by
+    domain: Person
+    range: Organisation
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R23
+      cardinality: n:1
+      characteristics: temporal
+      role: employer or subcontractor
+  crew_unit:
+    title: belongs to
+    domain: Crew
+    range: OrganisationalUnit
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R21
+      cardinality: n:1
+      characteristics: mandatory, temporal
+  prospective_client:
+    title: submitted to
+    domain: Tender
+    range: Organisation
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R03
+      cardinality: n:1
+      characteristics: mandatory
+      role: prospective client
+  resulting_contract:
+    title: results in
+    domain: Tender
+    range: Contract
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R04
+      cardinality: 1:0..1
+  client:
+    title: with client
+    domain: Contract
+    range: Organisation
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R01
+      cardinality: n:1
+      characteristics: mandatory, temporal
+      role: client
+  lead_unit:
+    title: led by
+    domain: Contract
+    range: OrganisationalUnit
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R02
+      cardinality: n:1
+      characteristics: mandatory
+  schedule_items:
+    title: priced by
+    domain: Contract
+    range: ScheduleItem
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R05
+      cardinality: 1:n
+      characteristics: mandatory
+  covers:
+    title: covers
+    domain: Contract
+    any_of:
+    - range: InfrastructureSystem
+    - range: Site
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R59
+      cardinality: n:m
+  services:
+    title: for service
+    domain: Contract
+    range: ServiceType
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R60
+      cardinality: n:m
+  amends_contract:
+    title: amends
+    domain: Variation
+    range: Contract
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R06
+      cardinality: n:1
+      characteristics: mandatory
+  claimed_under:
+    title: claims under
+    domain: PaymentClaim
+    range: Contract
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R07
+      cardinality: n:1
+      characteristics: mandatory
+  claimed_items:
+    title: claims quantity of
+    domain: PaymentClaim
+    range: ScheduleItem
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R08
+      cardinality: n:m
+  raised_by:
+    title: raised by
+    domain: WorkRequest
+    any_of:
+    - range: Organisation
+    - range: Person
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R09
+      cardinality: n:1
+  resulting_work_orders:
+    title: results in
+    domain: WorkRequest
+    range: WorkOrder
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R10
+      cardinality: 1:0..n
+  authorised_under:
+    title: authorised under
+    domain: WorkOrder
+    range: Contract
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R11
+      cardinality: n:1
+      characteristics: mandatory
+  work_site:
+    title: carried out at
+    domain: WorkOrder
+    range: Site
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R12
+      cardinality: n:1
+      characteristics: mandatory
+  acts_on:
+    title: acts on
+    domain: WorkOrder
+    range: InfrastructureAsset
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R13
+      cardinality: n:0..n
+  part_of_project:
+    title: part of
+    domain: WorkOrder
+    range: Project
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R14
+      cardinality: n:0..1
+  charged_to:
+    title: charged to
+    domain: WorkOrder
+    range: CostCollector
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R16
+      cardinality: n:1
+      characteristics: mandatory
+  assigned_crew:
+    title: assigned to
+    domain: WorkOrder
+    range: Crew
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R18
+      cardinality: n:0..1
+  required_competencies:
+    title: requires
+    domain: WorkOrder
+    range: Competency
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R19
+      cardinality: n:m
+  work_type:
+    title: classified as
+    domain: WorkOrder
+    range: WorkType
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R20a
+      cardinality: n:1
+      characteristics: mandatory
+  service_type:
+    title: classified as
+    domain: WorkOrder
+    range: ServiceType
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R20b
+      cardinality: n:1
+      characteristics: mandatory
+  delivered_under:
+    title: delivered under
+    domain: Project
+    range: Contract
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R15
+      cardinality: n:1
+      characteristics: mandatory
+  project_cost_collectors:
+    title: charged to
+    domain: Project
+    range: CostCollector
+    multivalued: true
+    required: true
+    annotations:
+      relation_id: R17
+      cardinality: 1:1..n
+  within_site:
+    title: within
+    domain: Site
+    range: Site
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R33
+      cardinality: n:0..1
+      characteristics: transitive
+  district:
+    title: in district
+    domain: Site
+    range: TerritorialArea
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R34
+      cardinality: n:1
+  part_of_system:
+    title: part of system
+    domain: InfrastructureAsset
+    range: InfrastructureSystem
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R30
+      cardinality: n:0..1
+  component_of:
+    title: component of
+    domain: InfrastructureAsset
+    range: InfrastructureAsset
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R31
+      cardinality: n:0..1
+      characteristics: transitive
+  located_at:
+    title: located at
+    domain: InfrastructureAsset
+    range: Site
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R32
+      cardinality: n:1
+  asset_class:
+    title: classified as
+    domain: InfrastructureAsset
+    range: AssetClass
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R61
+      cardinality: n:1
+  plant_source:
+    title: owned or hired from
+    domain: PlantItem
+    range: Organisation
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R35
+      cardinality: n:1
+      characteristics: temporal
+  plant_unit:
+    title: allocated to
+    domain: PlantItem
+    range: OrganisationalUnit
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R36
+      cardinality: n:1
+      characteristics: temporal
+  used_on:
+    title: used on
+    domain: Material
+    range: WorkOrder
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R37
+      cardinality: n:m
+  held_by:
+    title: held by
+    domain: Certification
+    range: Person
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R24
+      cardinality: n:1
+      characteristics: mandatory
+  evidences:
+    title: evidences
+    domain: Certification
+    range: Competency
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R25
+      cardinality: n:1
+      characteristics: mandatory
+  imposed_by:
+    title: imposed by
+    domain: Obligation
+    range: Organisation
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R38
+      cardinality: n:1
+      characteristics: mandatory
+      role: regulator or client
+  arises_from:
+    title: arises from
+    domain: Obligation
+    range: Contract
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R39
+      cardinality: n:0..1
+  applies_to:
+    title: applies to
+    domain: Obligation
+    any_of:
+    - range: InfrastructureSystem
+    - range: Site
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R40
+      cardinality: n:1
+  checks:
+    title: checks
+    domain: Inspection
+    range: Obligation
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R41
+      cardinality: n:0..n
+  inspection_site:
+    title: performed at
+    domain: Inspection
+    range: Site
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R42
+      cardinality: n:1
+      characteristics: mandatory
+  performed_by:
+    title: performed by
+    domain: Inspection
+    range: Person
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R43
+      cardinality: n:1
+  done_under:
+    title: done under
+    domain: Inspection
+    range: WorkOrder
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R44
+      cardinality: n:0..1
+  sample_site:
+    title: taken at
+    domain: Sample
+    range: Site
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R45
+      cardinality: n:1
+      characteristics: mandatory
+  sampled_for:
+    title: taken to meet
+    domain: Sample
+    range: Obligation
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R46
+      cardinality: n:0..1
+  result_for:
+    title: result for
+    domain: Measurement
+    range: Sample
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R47
+      cardinality: n:0..1
+  raised_from:
+    title: raised from
+    domain: NonConformance
+    any_of:
+    - range: Measurement
+    - range: Inspection
+    - range: WorkOrder
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R48
+      cardinality: n:1
+  breaches:
+    title: breaches
+    domain: NonConformance
+    range: Obligation
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R49
+      cardinality: n:0..1
+  remedied_by:
+    title: remedied by
+    domain: NonConformance
+    range: WorkOrder
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R50
+      cardinality: 1:0..n
+  event_site:
+    title: occurred at
+    domain: HealthSafetyEvent
+    range: Site
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R51
+      cardinality: n:1
+  during_work:
+    title: during
+    domain: HealthSafetyEvent
+    range: WorkOrder
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R52
+      cardinality: n:0..1
+  involved:
+    title: involved
+    domain: HealthSafetyEvent
+    range: Person
+    multivalued: true
+    required: false
+    annotations:
+      relation_id: R53
+      cardinality: n:m
+  movement_site:
+    title: at
+    domain: MaterialMovement
+    range: Site
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R54
+      cardinality: n:1
+      characteristics: mandatory
+  stream:
+    title: classified as
+    domain: MaterialMovement
+    range: MaterialStream
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R55
+      cardinality: n:1
+      characteristics: mandatory
+  time_of:
+    title: records time of
+    domain: TimeEntry
+    any_of:
+    - range: Person
+    - range: PlantItem
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R26
+      cardinality: n:1
+      characteristics: mandatory
+  booked_to:
+    title: booked to
+    domain: TimeEntry
+    any_of:
+    - range: WorkOrder
+    - range: CostCollector
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R27
+      cardinality: n:1
+      characteristics: mandatory
+  costed_as:
+    title: costed as
+    domain: TimeEntry
+    range: CostTransaction
+    multivalued: false
+    required: false
+    annotations:
+      relation_id: R28
+      cardinality: 1:0..1
+  posted_to:
+    title: posted to
+    domain: CostTransaction
+    range: CostCollector
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R56
+      cardinality: n:1
+      characteristics: mandatory
+  cost_type:
+    title: classified as
+    domain: CostTransaction
+    range: CostType
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R57
+      cardinality: n:1
+      characteristics: mandatory
+  owned_asset:
+    title: of asset
+    domain: AssetOwnership
+    range: InfrastructureAsset
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R29
+      cardinality: n:1
+      characteristics: mandatory
+  owner:
+    title: owned by
+    domain: AssetOwnership
+    range: Organisation
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R62
+      cardinality: n:1
+      characteristics: mandatory
+      role: asset owner
+  responds_to:
+    title: responds to
+    domain: PaymentSchedule
+    range: PaymentClaim
+    multivalued: false
+    required: true
+    annotations:
+      relation_id: R63
+      cardinality: n:1
+      characteristics: mandatory
+enums:
+  ServiceType:
+    title: Service type
+    description: What the contractor sells
+    in_subset:
+    - reference
+    permissible_values:
+      Drinking water operations: {}
+      Wastewater operations: {}
+      Parks and open space maintenance: {}
+      Resource recovery operations: {}
+      Roading maintenance: {}
+      Civil construction: {}
+      Surveying and design: {}
+      Electrical and building services: {}
+    annotations:
+      owner_role: Commercial manager
+  WorkType:
+    title: Work type
+    description: How the work arises
+    in_subset:
+    - reference
+    permissible_values:
+      Planned (cyclic): {}
+      Reactive: {}
+      Emergency: {}
+      Capital: {}
+    annotations:
+      owner_role: Division operations managers
+  AssetClass:
+    title: Asset class
+    description: What the infrastructure is (owner's classification)
+    in_subset:
+    - reference
+    annotations:
+      owner_role: Asset & GIS lead
+      note: >-
+        Adopt the asset owner's scheme (national three waters asset metadata standards, RAMM for roads)
+        rather than inventing one.
+  MaterialStream:
+    title: Material stream
+    description: What the material is, for diversion reporting
+    in_subset:
+    - reference
+    permissible_values:
+      Refuse: {}
+      Green waste: {}
+      Recycling: {}
+      Hardfill: {}
+      Hazardous: {}
+    annotations:
+      owner_role: Resource recovery manager
+  CostType:
+    title: Cost type
+    description: Nature of the cost
+    in_subset:
+    - reference
+    permissible_values:
+      Labour: {}
+      Plant: {}
+      Materials: {}
+      Subcontract: {}
+      Overhead: {}
+    annotations:
+      owner_role: Finance
+  TerritorialArea:
+    title: Territorial area
+    description: Statutory district (Stats NZ codes)
+    in_subset:
+    - reference
+    annotations:
+      owner_role: Data governance group
+      note: Values are Stats NZ territorial authorities; each client lists the ones it works in.

@@ -6,6 +6,7 @@ import type { APIRoute } from "astro";
 import { SITE } from "@/config";
 import { DOMAINS } from "@/data/patternTaxonomy";
 import { getGuides, guideMarkdownPath } from "@/utils/guides";
+import { getModels, modelPath } from "@/utils/models";
 import {
   getPatterns,
   LIBRARY_DESCRIPTION,
@@ -37,6 +38,14 @@ export const GET: APIRoute = async ({ site }) => {
     out.push("## Guides", "");
     for (const g of guides)
       out.push(`- [${g.data.title}](${abs(guideMarkdownPath(g.id))}): ${g.data.description}`);
+    out.push("");
+  }
+
+  const models = getModels();
+  if (models.length) {
+    out.push("## Data models", "");
+    for (const m of models)
+      out.push(`- [${m.title}](${abs(`${modelPath(m.slug)}.md`)}): ${m.description}`);
     out.push("");
   }
 
