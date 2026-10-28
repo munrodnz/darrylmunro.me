@@ -40,11 +40,7 @@ faq:
     a: "If a file holds personal information and goes to an overseas party, check the cross-border disclosure rules in the Privacy Act 2020 before it leaves, and make sure you can tell what was sent if there is a breach."
 published: 2026-10-27
 reviewed: 2026-10-27
-# BEFORE PUBLISHING: the worked example was drafted by Claude from your
-# description of utilities work (sharing asset data with third parties).
-# Check every detail matches what actually happened, especially the outcome
-# in its last paragraph, then delete this note and set draft to false.
-draft: true
+draft: false
 inspiredBy:
   - name: "Secure File Transfer pattern at IT Architecture Patterns"
     url: "https://itarchitecturepatterns.net/patterns"

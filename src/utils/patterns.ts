@@ -13,7 +13,7 @@ export const LIBRARY_PATH = "/patterns";
 export const LIBRARY_DESCRIPTION =
   "Pragmatic architecture patterns for New Zealand organisations: what each pattern solves, the cheaper fix to try first, and where it stops being BAU.";
 
-const AUTHOR_LOCATION = "Ōtepoti Dunedin, Aotearoa New Zealand";
+export const AUTHOR_LOCATION = "Ōtepoti Dunedin, Aotearoa New Zealand";
 const AUTHOR_SAME_AS = [
   "https://www.linkedin.com/in/darryl-munro/",
   "https://github.com/munrodnz",
@@ -41,10 +41,10 @@ export const lastModified = (p: Pattern) => p.data.reviewed ?? p.data.published;
 export const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 export const ladderLabel = (r: number) => LADDER[r as LadderRung].label;
 
-const abs = (path: string, site: URL) => new URL(path, site).href;
-const personId = (site: URL) => `${abs("/about", site)}#darryl`;
+export const abs = (path: string, site: URL) => new URL(path, site).href;
+export const personId = (site: URL) => `${abs("/about", site)}#darryl`;
 
-function person(site: URL) {
+export function person(site: URL) {
   return {
     "@type": "Person",
     "@id": personId(site),

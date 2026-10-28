@@ -11,6 +11,7 @@ import Header from "@/components/Header.astro";
 import { SITE } from "@/config";
 import { BOUNDARIES, DOMAINS, LADDER } from "@/data/patternTaxonomy";
 import Layout from "@/layouts/Layout.astro";
+import { getGuides } from "@/utils/guides";
 import {
   getPatterns,
   isoDate,
@@ -35,6 +36,7 @@ const d = pattern.data;
 const site = Astro.site ?? new URL(SITE.website);
 const related = d.related.length ? await getEntries(d.related) : [];
 const modified = lastModified(pattern);
+const guideIds = new Set((await getGuides()).map((g) => g.id));
 const fmt = (date: Date) => date.toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" });
 
 const eyebrow = "font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase";
@@ -107,7 +109,7 @@ const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tr
       <section aria-labelledby="try-first" class="px-0 mb-10">
         <h2 id="try-first" class={h2}>Before you build: try these first</h2>
         <p class="text-[17px] leading-[1.75] text-text-secondary mb-5">
-          Climb only as far as the problem forces you. This pattern sits at rung {d.ladderRung}.
+          Climb only as far as the problem forces you. This pattern sits at rung {d.ladderRung} of the {guideIds.has("daz-method") ? <a href="/daz-method" class="text-accent">Daz Method</a> : "Daz Method"} ladder.
         </p>
         <ol class="space-y-3">
           {Object.entries(LADDER).map(([n, rung]) => {
@@ -120,7 +122,7 @@ const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tr
                 <span class:list={["font-[var(--font-mono)] text-sm font-medium w-6 shrink-0", here ? "text-accent" : "text-muted"]}>{rungNo}</span>
                 <div>
                   <div class="flex flex-wrap items-center gap-2">
-                    <strong class:list={["font-[var(--font-head)] text-[15px] font-semibold", here ? "text-accent" : "text-foreground"]}>{rung.label}</strong>
+                    <strong class:list={["font-[var(--font-head)] text-[15px] font-semibold", here ? "text-accent" : "text-foreground"]}>{rungNo === 3 && guideIds.has("data-modelling") ? <a href="/data-modelling" class="hover:underline">{rung.label}</a> : rung.label}</strong>
                     {here && <span class="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.08em] text-accent border border-accent-dim rounded px-1.5 py-0.5">This pattern</span>}
                   </div>
                   {steps.map((t) => <p class="text-[15px] leading-[1.7] text-text-secondary mt-1">{t.action}</p>)}

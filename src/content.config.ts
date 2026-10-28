@@ -5,6 +5,7 @@ import { BOUNDARY_KEYS, DOMAIN_KEYS } from "./data/patternTaxonomy";
 export const BLOG_PATH = "src/content/blog";
 export const PROJECTS_PATH = "src/content/projects";
 export const PATTERNS_PATH = "src/content/patterns";
+export const GUIDES_PATH = "src/content/guides";
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
@@ -106,4 +107,33 @@ const patterns = defineCollection({
     }),
 });
 
-export const collections = { blog, projects, patterns };
+/**
+ * Guides: long-form reference pages served at the site root (e.g. /daz-method).
+ * Same answer-first rules as patterns. A guide's file name must not clash with
+ * an existing page (about, services, contact...), since static pages win.
+ */
+const guides = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: `./${GUIDES_PATH}` }),
+  schema: z.object({
+    title: z.string().max(70),
+    seoTitle: z.string().max(60).optional(),
+    eyebrow: z.string().max(40).optional(),
+    description: z.string().min(70).max(160),
+    summary: z.string().refine((s) => wordCount(s) >= 40 && wordCount(s) <= 80, {
+      message: "summary should be 40–80 words so it can be quoted on its own",
+    }),
+    /** Links shown as buttons under the summary, e.g. the GitHub repository. */
+    links: z.array(z.object({ label: z.string(), url: z.string() })).default([]),
+    relatedPatterns: z.array(reference("patterns")).default([]),
+    relatedGuides: z.array(z.string()).default([]),
+    faq: z
+      .array(z.object({ q: z.string(), a: z.string() }))
+      .max(6)
+      .default([]),
+    published: z.coerce.date(),
+    reviewed: z.coerce.date().optional(),
+    draft: z.boolean().default(true),
+  }),
+});
+
+export const collections = { blog, projects, patterns, guides };

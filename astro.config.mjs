@@ -12,19 +12,20 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 
 const SITE_URL = "https://www.darrylmunro.nz/";
 
-// Published patterns and their last-reviewed dates, for sitemap <lastmod>.
-// Drafts (draft: true, or no draft field — the schema default) are excluded.
-const PATTERNS_DIR = "./src/content/patterns";
-const patternLastmod = Object.fromEntries(
-  (existsSync(PATTERNS_DIR) ? readdirSync(PATTERNS_DIR) : [])
+// Published patterns and guides with their last-reviewed dates, for sitemap
+// <lastmod>. Drafts (draft: true, or no draft field — the schema default) are
+// excluded. Patterns live at /patterns/<name>, guides at /<name>.
+const publishedLastmod = (dir, urlPrefix) =>
+  (existsSync(dir) ? readdirSync(dir) : [])
     .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
-    .map((f) => [f.replace(/\.md$/, ""), readFileSync(`${PATTERNS_DIR}/${f}`, "utf8").split("---")[1] ?? ""])
+    .map((f) => [f.replace(/\.md$/, ""), readFileSync(`${dir}/${f}`, "utf8").split("---")[1] ?? ""])
     .filter(([, fm]) => /^draft:\s*false\s*$/m.test(fm))
     .map(([slug, fm]) => {
       const date = (fm.match(/^reviewed:\s*["']?([\d-]+)/m) ?? fm.match(/^published:\s*["']?([\d-]+)/m))?.[1];
-      return [`/patterns/${slug}`, date];
-    }),
-);
+      return [`${urlPrefix}${slug}`, date];
+    });
+const patternLastmod = Object.fromEntries(publishedLastmod("./src/content/patterns", "/patterns/"));
+const guideLastmod = Object.fromEntries(publishedLastmod("./src/content/guides", "/"));
 const hasPatterns = Object.keys(patternLastmod).length > 0;
 
 // https://astro.build/config
@@ -88,6 +89,11 @@ export default defineConfig({
 	        else if (url.includes('/tags/')) {
 	          item.priority = 0.1;
 	          item.changefreq = ChangeFreqEnum.YEARLY;
+	        }
+	        else if (guideLastmod[new URL(url).pathname.replace(/\/$/, '')]) {
+	          item.priority = 0.9;
+	          item.changefreq = ChangeFreqEnum.MONTHLY;
+	          item.lastmod = new Date(guideLastmod[new URL(url).pathname.replace(/\/$/, '')]).toISOString();
 	        }
 	        else if (url.includes('/patterns')) {
 	          const path = new URL(url).pathname.replace(/\/$/, '');

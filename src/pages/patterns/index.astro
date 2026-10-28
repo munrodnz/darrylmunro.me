@@ -9,6 +9,7 @@ import Header from "@/components/Header.astro";
 import { SITE } from "@/config";
 import { BOUNDARIES, DOMAINS } from "@/data/patternTaxonomy";
 import Layout from "@/layouts/Layout.astro";
+import { getGuides } from "@/utils/guides";
 import {
   getPatterns,
   LIBRARY_DESCRIPTION,
@@ -19,6 +20,7 @@ import {
 
 const site = Astro.site ?? new URL(SITE.website);
 const patterns = await getPatterns();
+const guideIds = new Set((await getGuides()).map((g) => g.id));
 const domains = Object.entries(DOMAINS)
   .map(([key, domain]) => ({ key, ...domain, items: patterns.filter((p) => p.data.domain === key) }))
   .filter((d) => d.items.length > 0);
@@ -50,6 +52,7 @@ const domains = Object.entries(DOMAINS)
           Every pattern starts with the cheapest thing that could work. The ladder runs from fixing the process,
           through using the tools you already own, modelling the data properly and building something, to adding AI.
           Climb only as far as the problem forces you.
+          {guideIds.has("daz-method") && <>See <a href="/daz-method" class="text-accent">the Daz Method</a> for how the ladder works.</>}
         </p>
 
         {domains.length > 1 && (

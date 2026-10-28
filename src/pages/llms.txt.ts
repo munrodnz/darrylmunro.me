@@ -5,6 +5,7 @@
 import type { APIRoute } from "astro";
 import { SITE } from "@/config";
 import { DOMAINS } from "@/data/patternTaxonomy";
+import { getGuides, guideMarkdownPath } from "@/utils/guides";
 import {
   getPatterns,
   LIBRARY_DESCRIPTION,
@@ -16,6 +17,7 @@ export const GET: APIRoute = async ({ site }) => {
   const base = site ?? new URL(SITE.website);
   const abs = (p: string) => new URL(p, base).href;
   const patterns = await getPatterns();
+  const guides = await getGuides();
 
   const out: string[] = [
     `# ${SITE.author}`,
@@ -30,6 +32,13 @@ export const GET: APIRoute = async ({ site }) => {
     `- [How I work](${abs("/how-i-work")}): Engagement approach`,
     "",
   ];
+
+  if (guides.length) {
+    out.push("## Guides", "");
+    for (const g of guides)
+      out.push(`- [${g.data.title}](${abs(guideMarkdownPath(g.id))}): ${g.data.description}`);
+    out.push("");
+  }
 
   if (patterns.length) {
     out.push(

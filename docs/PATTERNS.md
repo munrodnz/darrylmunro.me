@@ -38,3 +38,11 @@ The page layout renders everything else from frontmatter: In short, The problem,
 - [Rich Results Test](https://search.google.com/test/rich-results) and [Schema Markup Validator](https://validator.schema.org/) on the pattern URL
 - `/llms.txt` and `/patterns/<name>.md` load as plain text
 - The pattern appears in `sitemap-0.xml` with a `<lastmod>`
+
+## Guides
+
+Long-form reference pages served at the site root, such as `/daz-method` and `/data-modelling`. Each is a Markdown file in `src/content/guides/`, rendered by `src/pages/[guide].astro`, with a Markdown version at `/<name>.md` and an entry in `/llms.txt`.
+
+They follow the same rules as patterns: a 40–80 word `summary`, `draft: true` until reviewed, and `reviewed:` kept current. A guide's file name must not match an existing page such as `about` or `services`, because static pages take priority.
+
+Pattern pages and the library link to `/daz-method` and `/data-modelling` only once those guides are published, so a draft guide never leaves a broken link in production.
