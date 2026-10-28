@@ -14,7 +14,8 @@
       "!**/.astro/",
       "!**/public/",
       "!**/package-lock.json",
-      "!**/*.css"
+      "!**/*.css",
+      "!**/src/scripts/model-explorer.js"
     ]
   },
   "formatter": {

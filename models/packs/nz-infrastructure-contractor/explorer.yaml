@@ -1,0 +1,386 @@
+# NZ infrastructure contractor — pack narrative for the model explorer.
+# Everything here applies to any organisation using the pack: levels, the
+# lexicon of words with several meanings, competency questions, closed-world
+# rules, modelling dilemmas and the reference models the pack was graded against.
+
+levels:
+- id: L0
+  name: Context
+  question: Who do we work for, who do we answer to, and who owns what we touch?
+  audience: Board, executive team, new staff, anyone outside data
+  content: The organisation, its parties and the flows between them. No data structures.
+- id: L1
+  name: Subject areas
+  question: What are the big areas of meaning, and who owns each?
+  audience: Data governance group, division managers
+  content: Eight subject areas with an owning role and the links between them.
+- id: L2
+  name: Conceptual model
+  question: What are the things, what do they mean, and how do they relate?
+  audience: Modellers, analysts, subject-matter experts, Genie authors
+  content: About 30 concepts, their definitions, relations and rules. Technology-free.
+- id: L3
+  name: Logical mapping
+  question: Where does each concept land in the lakehouse, and how well does the reference model fit?
+  audience: Data engineers, platform team
+  content: Concept to Databricks industry-model product, with a fit grade and the change needed.
+lexicon:
+- term: asset
+  risk: high
+  senses:
+  - concept: InfrastructureAsset
+    context: Operations, asset owners
+  - concept: PlantItem
+    context: Plant team
+  - concept: PlantItem
+    context: 'Finance (fixed asset register: mainly plant and buildings)'
+  guidance: >-
+    Never use bare "asset" in a table, column, metric or Genie instruction. Use "infrastructure asset"
+    or "plant item".
+- term: plant
+  risk: high
+  senses:
+  - concept: InfrastructureAsset
+    context: 'Water: treatment plant (WTP/WWTP)'
+  - concept: PlantItem
+    context: 'Plant & equipment: vehicles, mowers, excavators'
+  guidance: Say "treatment plant" or "plant item". Add both to Genie synonyms with disambiguation.
+- term: job
+  risk: high
+  senses:
+  - concept: WorkOrder
+    context: Crews and supervisors
+  - concept: Project
+    context: Construction staff
+  - concept: CostCollector
+    context: Finance (job number)
+  guidance: Ask which is meant. Default in Genie is work order; job number always means cost collector.
+- term: customer
+  risk: high
+  senses:
+  - concept: Organisation
+    context: 'Commercial: the client paying under a contract'
+  - concept: Person
+    context: Households served by a council — not the contractor's customers
+  - concept: Person
+    context: 'Members of the public using a resource recovery facility (role: facility user)'
+  guidance: Use "client" for the paying organisation. Avoid "customer" in model names.
+- term: scheme
+  risk: medium
+  senses:
+  - concept: InfrastructureSystem
+    context: Water and wastewater
+  - concept: Project
+    context: Council capital works programmes
+  guidance: Use "supply scheme" or "project".
+- term: claim
+  risk: medium
+  senses:
+  - concept: PaymentClaim
+    context: Commercial
+  - concept: Variation
+    context: Variation or extension-of-time claim
+  guidance: Qualify every use.
+- term: exceedance / non-compliance
+  risk: medium
+  senses:
+  - concept: NonConformance
+    context: 'Exceedance: measured value over a limit'
+  - concept: NonConformance
+    context: 'Non-compliance: a finding against a rule or consent'
+  guidance: Two type values on one concept. An exceedance is not automatically a non-compliance.
+- term: site
+  risk: low
+  senses:
+  - concept: Site
+    context: All divisions — but granularity varies
+  guidance: Record the level (reserve, sportsfield, sampling tap).
+- term: docket
+  risk: medium
+  senses:
+  - concept: WorkOrder
+    context: Crews receiving work (a job docket)
+  - concept: TimeEntry
+    context: Crews recording hours and plant (a timesheet docket)
+  guidance: Use "work order" or "time entry". Found by the build's alias check. Confirm with crews.
+- term: depot
+  risk: medium
+  senses:
+  - concept: OrganisationalUnit
+    context: The team based at a depot (staff, crews and costs are assigned to it)
+  - concept: Site
+    context: The yard or building itself, as a place where work and inspections happen
+  guidance: >-
+    Use "organisational unit" for the people and costs, "site" for the place. Found by the build's alias
+    check.
+- term: team
+  risk: medium
+  senses:
+  - concept: Crew
+    context: A group dispatched together to do work
+  - concept: OrganisationalUnit
+    context: A permanent part of the organisation structure (for example the finance team)
+  guidance: >-
+    Use "crew" for dispatched groups and "organisational unit" for structure. Found by the build's alias
+    check.
+competency_questions:
+- id: CQ01
+  q: >-
+    Which clients do we work for, under which contracts, and which contracts expire in the next 12 months?
+  concepts:
+  - Organisation
+  - Contract
+- id: CQ02
+  q: >-
+    For a given infrastructure asset, who owns it today, which contract covers our work on it, and what
+    work did we do on it last quarter?
+  concepts:
+  - InfrastructureAsset
+  - Organisation
+  - Contract
+  - WorkOrder
+  - AssetOwnership
+- id: CQ03
+  q: >-
+    How many planned and reactive work orders did crews complete per contract each month, and what share
+    met the contract response time?
+  concepts:
+  - WorkOrder
+  - Contract
+  - Crew
+  - Obligation
+- id: CQ04
+  q: >-
+    What did it cost to deliver contract X this financial year, by labour, plant, materials and subcontract,
+    and what have we claimed?
+  concepts:
+  - Contract
+  - CostCollector
+  - CostTransaction
+  - PaymentClaim
+  - PaymentSchedule
+- id: CQ05
+  q: Which compliance obligations fall due this week, at which sites, and which are overdue?
+  concepts:
+  - Obligation
+  - Site
+  - Inspection
+  - Sample
+- id: CQ06
+  q: Which supply had results outside limits, and what work was raised in response?
+  concepts:
+  - InfrastructureSystem
+  - Sample
+  - Measurement
+  - NonConformance
+  - WorkOrder
+- id: CQ07
+  q: Which plant items worked on which work orders, and what was their utilisation?
+  concepts:
+  - PlantItem
+  - TimeEntry
+  - WorkOrder
+- id: CQ08
+  q: Who holds the competencies a work order needs, and whose certifications expire in the next 60 days?
+  concepts:
+  - Person
+  - Competency
+  - Certification
+  - WorkOrder
+- id: CQ09
+  q: What health and safety events occurred, on which sites and work, involving which crews?
+  concepts:
+  - HealthSafetyEvent
+  - Site
+  - WorkOrder
+  - Crew
+- id: CQ10
+  q: >-
+    For each construction project, what is the contract value, approved variations, claimed to date and
+    forecast margin?
+  concepts:
+  - Project
+  - Contract
+  - Variation
+  - PaymentClaim
+  - CostTransaction
+  - PaymentSchedule
+- id: CQ11
+  q: How much material passed through each resource recovery facility by stream each month?
+  concepts:
+  - MaterialMovement
+  - Site
+- id: CQ12
+  q: What share of revenue comes from the shareholder council compared with other clients?
+  concepts:
+  - Organisation
+  - Contract
+  - PaymentClaim
+- id: CQ13
+  q: Which tenders are open, for which prospective clients and services?
+  concepts:
+  - Tender
+  - Organisation
+- id: CQ14
+  q: What work has any division done at a given place over time?
+  concepts:
+  - Site
+  - WorkOrder
+  - OrganisationalUnit
+rules:
+- id: RU1
+  text: Every work order is authorised under exactly one contract.
+  test: work_order.contract_id is not null
+  enforced_by: 'LinkML: required slot authorised_under'
+- id: RU2
+  text: >-
+    Every infrastructure asset has exactly one owner at any instant; ownership periods for an asset never
+    overlap.
+  test: no overlapping (asset_id, valid_from, valid_to)
+  enforced_by: Data-quality test on AssetOwnership
+- id: RU3
+  text: Plant item and Infrastructure asset are disjoint — nothing is both.
+  test: no shared identifiers across the two registers
+  enforced_by: 'LinkML: disjoint_with on PlantItem'
+- id: RU4
+  text: >-
+    A certification has an expiry date or is explicitly flagged non-expiring; a null expiry is an error,
+    not "never".
+  test: expiry_date is not null or non_expiring = true
+  enforced_by: Data-quality test on Certification
+- id: RU5
+  text: A site with no infrastructure system recorded is unknown, not "outside any system".
+  test: report as 'unassigned', never as 'none'
+  enforced_by: Reporting convention
+- id: RU6
+  text: A non-conformance of type exceedance must reference a measurement.
+  test: type = exceedance implies measurement_id is not null
+  enforced_by: Data-quality test on NonConformance
+- id: RU7
+  text: >-
+    An obligation is met only by an inspection, sample or measurement that references it — never by a
+    closed work order alone.
+  test: obligation status derived from linked evidence
+  enforced_by: Reporting convention (derived status)
+dilemmas:
+- id: D1
+  title: Install an industry model, or model the organisation first?
+  context: >-
+    Contractors in this industry often cover several service lines, for example water operations, parks,
+    roading and construction. The three closest Databricks MVMs (water utilities, construction, waste
+    management) together hold 440 tables and about 17,000 attributes, are US-framed, and assume an owner-operator.
+  options:
+  - name: Install one or more industry models and trim
+    commits: Their concept boundaries, names and US regulatory content.
+    consequence: >-
+      Months of trimming; "utility" concepts (meter, tariff, bill) leak into reporting; three definitions
+      of asset.
+  - name: Model the organisation's ~30 concepts first, then use the models as a parts bin
+    commits: A small CDM that someone owns and keeps current.
+    consequence: Faster agreement; reuse where fit is full; explicit mapping shows where to extend.
+  deciding_questions:
+  - Can an operations manager read and challenge the model in an hour?
+  - Do we need more than 30 concepts to answer the competency questions?
+  recommendation: >-
+    Model first. Feed the pack plus client overlay to the Databricks modelling agent as the business description,
+    then map product by product.
+  conditions: Revisit if the organisation becomes the asset owner rather than an operator.
+- id: D2
+  title: One "asset" concept or two?
+  context: >-
+    Operations, the plant team and finance all say "asset" for different things; the water reference model
+    puts vehicles in the infrastructure asset registry.
+  options:
+  - name: One asset concept with a category
+    commits: Shared identity space and one table.
+    consequence: Counts, condition and ownership questions silently mix council pipes and the contractor's
+      utes.
+  - name: Two disjoint concepts — Infrastructure asset and Plant item
+    commits: Two registers, a lexicon entry, and rule RU3.
+    consequence: Clear ownership (client versus contractor) and clean Genie answers.
+  deciding_questions:
+  - Do the two ever share an owner, lifecycle or maintenance regime? (They do not.)
+  recommendation: Two concepts. "Asset" never appears unqualified.
+  conditions: None foreseen.
+- id: D3
+  title: Work order, project and "job"
+  context: Crews, construction staff and finance each mean something different by "job".
+  options:
+  - name: One Job concept
+    commits: Whatever finance's job structure happens to be.
+    consequence: Operational KPIs inherit costing granularity; Genie cannot tell what a job count is.
+  - name: Three concepts — Work order, Project, Cost collector
+    commits: An explicit mapping between operational and financial units per division.
+    consequence: More relations, but each question has one right grain.
+  deciding_questions:
+  - Does finance open a job per contract, per project or per work order? (Varies by organisation.)
+  recommendation: Three concepts; record the job mapping pattern per division.
+  conditions: >-
+    If every division maps one job to one contract, Cost collector could later become an attribute of
+    Contract.
+- id: D4
+  title: Client — a kind of organisation, or a role?
+  context: A shareholder council is often client, shareholder and asset owner at once.
+  options:
+  - name: Client as a subclass of Organisation
+    commits: Client membership is permanent.
+    consequence: Duplicate records when an organisation plays several roles; history breaks when roles
+      end.
+  - name: Client as a role, expressed by the contract's "with client" relation
+    commits: Roles are derived from relations.
+    consequence: One record per organisation; role questions answered by querying relations.
+  deciding_questions:
+  - Can an organisation stop being a client and still matter? (Yes.)
+  recommendation: Role. The same for asset owner, regulator, supplier, subcontractor and shareholder.
+  conditions: None.
+- id: D6
+  title: What format is the source of truth?
+  context: Options range from an OWL ontology to the Databricks agent's model.json to an ER tool.
+  options:
+  - name: OWL/RDF ontology authored in a tool such as Protégé
+    commits: Ontology skills in the team; open-world inference.
+    consequence: Expressive, but few people at a council-owned contractor will edit it.
+  - name: The Databricks model.json
+    commits: Physical-level structure and the vendor's schema.
+    consequence: Mixes conceptual and logical; every regeneration overwrites.
+  - name: LinkML schema in git, with generated outputs
+    commits: A small build script and a review habit (pull requests).
+    consequence: >-
+      Readable by non-modellers through the explorer; LinkML generators produce OWL, SHACL, SQL DDL, JSON
+      Schema, DBML and mapping sets; our build adds Genie instructions and data-quality rules.
+  deciding_questions:
+  - Who will maintain it in two years, and what skills will they have?
+  recommendation: >-
+    LinkML in git as the authoring format; everything else generated. Explorer for everyone who doesn't
+    edit files.
+  conditions: Move to an ontology editor if inference (not just description) becomes a requirement.
+reference_models:
+- prefix: dbxwater
+  name: Water utilities v2 MVM
+  tables: 103
+- prefix: dbxcon
+  name: Construction v2 MVM
+  tables: 143
+- prefix: dbxwaste
+  name: Waste management v1 MVM
+  tables: 194
+changelog:
+- version: 0.2.0
+  date: '2026-10-28'
+  changes:
+  - Moved to LinkML and split into a reusable industry pack and client overlays.
+  - >-
+    Added Asset ownership as a time-bounded, reified relation (so ownership changes are built into the
+    model, not just noted).
+  - >-
+    Added Payment schedule: the client's response to a payment claim, previously only mentioned in the
+    Databricks mapping.
+  - >-
+    Rule RU3 (plant item and infrastructure asset are disjoint) now expressed in LinkML as disjoint_with.
+  - >-
+    Work order now records three completion dates (done, closed, claimed) to resolve the vagueness of
+    'completed'.
+  - Certification now records expiry date and a non-expiring flag (rule RU4).
+  - >-
+    Lexicon: the resource recovery facility sense of 'customer' now points to Person in the role of facility
+    user.

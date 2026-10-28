@@ -16,6 +16,7 @@ import {
   guideMarkdownPath,
   guidePath,
 } from "@/utils/guides";
+import { getModels, modelPath } from "@/utils/models";
 import { isoDate, patternPath } from "@/utils/patterns";
 
 export async function getStaticPaths() {
@@ -30,6 +31,7 @@ const site = Astro.site ?? new URL(SITE.website);
 const modified = guideLastModified(guide);
 const relatedPatterns = d.relatedPatterns.length ? await getEntries(d.relatedPatterns) : [];
 const relatedGuides = guides.filter((g) => d.relatedGuides.includes(g.id));
+const relatedModels = getModels().filter((m) => d.relatedModels.includes(m.slug));
 const fmt = (date: Date) => date.toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" });
 const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tracking-[-0.01em] mb-3";
 ---
@@ -109,10 +111,19 @@ const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tr
         </section>
       )}
 
-      {(relatedPatterns.length > 0 || relatedGuides.length > 0) && (
+      {(relatedPatterns.length > 0 || relatedGuides.length > 0 || relatedModels.length > 0) && (
         <nav aria-labelledby="related" class="mb-10">
           <h2 id="related" class={h2}>Related</h2>
           <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {relatedModels.map((mo) => (
+              <li>
+                <a href={modelPath(mo.slug)} class="block h-full bg-background-raised border border-border rounded-md p-4 hover:border-accent-dim transition-colors hover:no-underline">
+                  <span class="block font-[var(--font-mono)] text-[10px] uppercase tracking-[0.08em] text-accent mb-1">Worked example · Data model</span>
+                  <span class="block font-[var(--font-head)] font-semibold text-foreground mb-1">{mo.title}</span>
+                  <span class="block text-sm text-text-secondary leading-relaxed">{mo.description}</span>
+                </a>
+              </li>
+            ))}
             {relatedGuides.map((g) => (
               <li>
                 <a href={guidePath(g.id)} class="block h-full bg-background-raised border border-border rounded-md p-4 hover:border-accent-dim transition-colors hover:no-underline">

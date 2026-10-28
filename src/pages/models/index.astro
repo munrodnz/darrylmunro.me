@@ -1,0 +1,44 @@
+---
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+import { explorerPath, getModels, modelPath } from "@/utils/models";
+
+const models = getModels();
+const description = "Open conceptual data models for New Zealand organisations, written in LinkML with an HTML explorer anyone can read.";
+---
+
+<Layout title={`Data models | ${SITE.title}`} description={description} ogType="website" noindex={!models.some((m) => !m.draft)}>
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+      <section class="pt-22 pb-10 relative" style="border: none;">
+        <div class="absolute left-0 top-20 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          Data models
+          <span class="block w-8 h-px bg-accent-dim"></span>
+        </div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">Data models</h1>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px]">
+          {description} Each one is an industry pack plus a fictional client overlay, so you can see how an
+          organisation adds its own detail without changing the shared model.
+        </p>
+      </section>
+      <div class="border-t border-border"></div>
+      <section class="px-0 py-12" style="border: none;">
+        <ul class="grid grid-cols-1 gap-5">
+          {models.map((m) => (
+            <li class="bg-background-raised border border-border rounded-md p-6">
+              <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-2.5">LinkML · {m.draft ? "Draft" : "Published"}</div>
+              <h2 class="font-[var(--font-head)] text-[19px] font-semibold text-foreground mb-2"><a href={modelPath(m.slug)} class="hover:text-accent hover:no-underline">{m.title}</a></h2>
+              <p class="text-sm text-text-secondary leading-relaxed mb-4">{m.description}</p>
+              <p class="flex gap-4 text-sm"><a href={modelPath(m.slug)} class="text-accent">Overview</a><a href={explorerPath(m.slug)} class="text-accent">Open the explorer</a></p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  </main>
+  <Footer />
+</Layout>

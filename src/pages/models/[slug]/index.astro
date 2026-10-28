@@ -1,0 +1,285 @@
+---
+/**
+ * Data model overview. Server-rendered so every definition is in the HTML for
+ * search and AI engines; the interactive explorer is linked from here.
+ */
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+import type { ModelEntry } from "@/data/models";
+import { buildExplorerData, explorerPath, getModels, modelPath } from "@/utils/models";
+import { abs, person, personId } from "@/utils/patterns";
+
+export async function getStaticPaths() {
+  return getModels().map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props as { entry: ModelEntry };
+const site = Astro.site ?? new URL(SITE.website);
+const data = buildExplorerData(entry);
+const m = data.releases[data.releases.length - 1].model;
+const client = data.client;
+const pageUrl = abs(modelPath(entry.slug), site);
+const modified = new Date(entry.reviewed ?? entry.published);
+const published = new Date(entry.published);
+const fmt = (d: Date) => d.toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" });
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const repoTree = "https://github.com/munrodnz/darrylmunro.me/tree/main/models";
+
+const areas = m.subject_areas
+  .filter((s: any) => s.id !== "reference")
+  .map((s: any) => ({ ...s, concepts: m.concepts.filter((c: any) => c.subject_area === s.id) }));
+const packSchemes = m.reference_schemes.filter((r: any) => r.layer === "pack");
+
+const downloads = [
+  { file: "pack.yaml", label: "Industry pack schema", note: "LinkML: classes, slots, enums and subsets" },
+  { file: "pack-explorer.yaml", label: "Pack narrative", note: "Levels, lexicon, questions, rules and dilemmas" },
+  { file: "overlay.yaml", label: `${client} overlay schema`, note: "LinkML: imports the pack, adds company enums" },
+  { file: "overlay-explorer.yaml", label: `${client} overlay narrative`, note: "Examples, context, divisions and open questions" },
+  { file: "model.json", label: "Explorer data", note: "Pack and overlay merged, as the explorer reads them" },
+];
+
+const counts = [
+  [m.concepts.length, "concepts"],
+  [m.relations.length, "relations"],
+  [areas.length, "subject areas"],
+  [m.reference_schemes.length, "reference vocabularies"],
+  [m.lexicon.length, "words with more than one meaning"],
+  [m.competency_questions.length, "competency questions"],
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Dataset",
+      "@id": `${pageUrl}#dataset`,
+      name: entry.title,
+      description: entry.summary,
+      url: pageUrl,
+      inLanguage: "en-NZ",
+      version: m.meta.pack?.version,
+      datePublished: iso(published),
+      dateModified: iso(modified),
+      creator: { "@id": personId(site) },
+      keywords: ["conceptual data model", "LinkML", "semantic layer", "infrastructure contractor", "New Zealand", "councils", "asset management"],
+      spatialCoverage: { "@type": "Place", name: "New Zealand" },
+      isBasedOn: (m.meta.sources ?? []).map((s: any) => ({ "@type": "CreativeWork", name: s.title, url: s.url })),
+      distribution: downloads.map((d) => ({
+        "@type": "DataDownload",
+        name: d.label,
+        encodingFormat: d.file.endsWith(".json") ? "application/json" : "application/yaml",
+        contentUrl: abs(`${modelPath(entry.slug)}/${d.file}`, site),
+      })),
+    },
+    person(site),
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: abs("/", site) },
+        { "@type": "ListItem", position: 2, name: "Data models", item: abs("/models", site) },
+        { "@type": "ListItem", position: 3, name: entry.title, item: pageUrl },
+      ],
+    },
+  ],
+};
+
+const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tracking-[-0.01em] mb-3";
+const eyebrow = "font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase";
+---
+
+<Layout
+  title={entry.seoTitle ?? `${entry.title} | ${SITE.title}`}
+  description={entry.description}
+  pubDatetime={published}
+  modDatetime={modified}
+  ogType="article"
+  structuredData={jsonLd}
+  markdownPath={`${modelPath(entry.slug)}.md`}
+  noindex={entry.draft}
+>
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      {entry.draft && (
+        <div role="note" class="mt-8 rounded-md border px-4 py-3 font-[var(--font-mono)] text-xs uppercase tracking-[0.08em] text-gold" style="border-color: var(--gold);">
+          Draft: only visible in dev and preview deployments
+        </div>
+      )}
+
+      <section class="pt-16 pb-8 relative" style="border: none;">
+        <div class="absolute left-0 top-14 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          Data model · LinkML
+          <span class="block w-8 h-px bg-accent-dim"></span>
+        </div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          {entry.title}
+        </h1>
+        <p class="text-xs text-muted font-[var(--font-mono)]">
+          Pack {m.meta.pack?.version} · Reviewed <time datetime={iso(modified)}>{fmt(modified)}</time>
+        </p>
+      </section>
+
+      <section aria-labelledby="in-short" class="bg-background-raised border border-border rounded-md p-6 mb-6" style="border-left: 3px solid var(--accent);">
+        <h2 id="in-short" class={`${eyebrow} mb-2`}>In short</h2>
+        <p class="text-[17px] leading-[1.75] text-foreground">{entry.summary}</p>
+      </section>
+
+      <div class="flex flex-wrap gap-3 mb-10">
+        <a href={explorerPath(entry.slug)} class="inline-flex items-center gap-2 rounded-md border border-accent bg-background-raised px-4 py-2 text-sm text-accent hover:bg-background-raised transition-colors hover:no-underline">
+          Open the explorer
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+        <a href="#downloads" class="inline-flex items-center gap-2 rounded-md border border-accent-dim px-4 py-2 text-sm text-accent hover:bg-background-raised transition-colors hover:no-underline">Download the LinkML</a>
+        <a href={repoTree} rel="noopener" class="inline-flex items-center gap-2 rounded-md border border-accent-dim px-4 py-2 text-sm text-accent hover:bg-background-raised transition-colors hover:no-underline">Source on GitHub</a>
+      </div>
+
+      <ul class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-12">
+        {counts.map(([n, label]) => (
+          <li class="bg-background-raised border border-border rounded-md p-4">
+            <span class="block font-[var(--font-head)] text-[28px] font-bold text-foreground leading-none mb-1">{n}</span>
+            <span class="block text-sm text-text-secondary">{label}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div class="border-t border-border"></div>
+
+      <section aria-labelledby="pack-overlay" class="px-0 py-10" style="border: none;">
+        <h2 id="pack-overlay" class={h2}>An industry pack and a client overlay</h2>
+        <div class="space-y-4 text-[17px] leading-[1.75] text-text-secondary">
+          <p>
+            The <strong class="text-foreground">pack</strong> holds what is true for any New Zealand infrastructure
+            contractor: the concepts, what they mean, how they relate, and which words cause trouble. It is written in
+            <a href="https://linkml.io" rel="noopener" class="text-accent">LinkML</a>, so the same source can generate
+            JSON Schema, SQL, OWL or Python classes as well as this page.
+          </p>
+          <p>
+            An <strong class="text-foreground">overlay</strong> imports the pack and adds one organisation's examples,
+            parties, divisions, local lists and open questions, without changing the pack. The overlay here is
+            <strong class="text-foreground">{client}</strong>, a fictional council-controlled contractor. Every
+            organisation, place, project and date in it is invented.
+          </p>
+          <p>
+            The explorer exists because a model only people who read YAML can use doesn't last. Division managers,
+            finance and the people writing AI assistant instructions need to read, question and correct it in plain
+            language.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="levels" class="px-0 pb-10" style="border: none;">
+        <h2 id="levels" class={h2}>Four levels</h2>
+        <ol class="space-y-3">
+          {m.levels.map((l: any) => (
+            <li class="flex gap-4 rounded-md border border-border p-4">
+              <span class="font-[var(--font-mono)] text-sm font-medium w-7 shrink-0 text-accent">{l.id}</span>
+              <div>
+                <strong class="font-[var(--font-head)] text-[15px] font-semibold text-foreground">{l.name}</strong>
+                <p class="text-[15px] leading-[1.7] text-text-secondary mt-1">{l.question} <span class="text-muted">For {l.audience.toLowerCase()}.</span></p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <section aria-labelledby="concepts" class="px-0 py-10" style="border: none;">
+        <h2 id="concepts" class={h2}>Concepts</h2>
+        <p class="text-[17px] leading-[1.75] text-text-secondary mb-8">
+          Definitions are from the pack. The explorer adds scope, identity, vagueness notes, relations and
+          {client} examples for each one.
+        </p>
+        {areas.map((a: any) => (
+          <div class="mb-10">
+            <h3 id={`area-${a.id}`} class="font-[var(--font-head)] text-[18px] font-semibold text-foreground mb-1 flex items-center gap-2">
+              <span class="inline-block w-2.5 h-2.5 rounded-sm" style={`background:${a.colour}`}></span>{a.name}
+            </h3>
+            <p class="text-sm text-text-secondary mb-4">{a.blurb} <span class="text-muted">Owner: {a.owner_role}.</span></p>
+            <dl class="divide-y divide-border border-y border-border">
+              {a.concepts.map((c: any) => (
+                <div id={`concept-${c.id}`} class="py-3">
+                  <dt class="font-[var(--font-head)] font-semibold text-foreground">
+                    {c.label}
+                    {c.alt_labels?.length > 0 && (
+                      <span class="font-[var(--font-body)] font-normal text-sm text-muted"> · also called {c.alt_labels.slice(0, 4).join(", ")}</span>
+                    )}
+                  </dt>
+                  <dd class="text-[15px] leading-[1.7] text-text-secondary mt-1">{c.definition}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+        <h3 class="font-[var(--font-head)] text-[18px] font-semibold text-foreground mb-3">Reference vocabularies</h3>
+        <ul class="space-y-2 text-[15px] text-text-secondary">
+          {packSchemes.map((r: any) => (
+            <li><strong class="text-foreground">{r.label}:</strong> {r.values.length ? r.values.join(", ") : r.principle}</li>
+          ))}
+        </ul>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <section aria-labelledby="lexicon" class="px-0 py-10" style="border: none;">
+        <h2 id="lexicon" class={h2}>Words that mean more than one thing</h2>
+        <p class="text-[17px] leading-[1.75] text-text-secondary mb-6">
+          These are the words that make reports and AI assistants give different answers to the same question.
+        </p>
+        <dl class="space-y-5">
+          {m.lexicon.map((t: any) => (
+            <div>
+              <dt class="font-[var(--font-mono)] text-foreground">“{t.term}” <span class="text-xs text-muted uppercase tracking-[0.08em]">· {t.risk} risk</span></dt>
+              <dd class="text-[15px] leading-[1.7] text-text-secondary mt-1">
+                <ul class="list-disc pl-5">
+                  {t.senses.map((s: any) => (
+                    <li>{s.context}: <span class="text-foreground">{m.concepts.find((c: any) => c.id === s.concept)?.label ?? s.concept}</span></li>
+                  ))}
+                </ul>
+                <p class="mt-1">{t.guidance}</p>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <section aria-labelledby="downloads" class="px-0 py-10" style="border: none;">
+        <h2 id="downloads" class={h2}>Downloads</h2>
+        <p class="text-[17px] leading-[1.75] text-text-secondary mb-5">
+          The overlay imports the pack by relative path, so keep the folder layout from
+          <a href={repoTree} rel="noopener" class="text-accent">the source on GitHub</a> if you run the LinkML tools on it.
+        </p>
+        <ul class="divide-y divide-border border-y border-border">
+          {downloads.map((d) => (
+            <li class="py-3 flex flex-wrap items-baseline justify-between gap-2">
+              <a href={`${modelPath(entry.slug)}/${d.file}`} class="text-accent font-[var(--font-mono)] text-sm">{d.file}</a>
+              <span class="text-sm text-text-secondary">{d.label}. <span class="text-muted">{d.note}.</span></span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <footer class="px-0 py-8 text-sm text-text-secondary leading-relaxed space-y-2">
+        <p>
+          Built by <a href="/about" rel="author" class="text-accent">{SITE.author}</a>, Ōtepoti Dunedin.
+          First published <time datetime={iso(published)}>{fmt(published)}</time>.
+          See also the <a href="/data-modelling" class="text-accent">data modelling guide</a> and
+          <a href="/daz-method" class="text-accent">the Daz Method</a>.
+        </p>
+        <p class="text-xs text-muted">
+          <a href={`${modelPath(entry.slug)}.md`} class="hover:text-accent transition-colors">Plain-text version</a> for tools and AI assistants.
+        </p>
+      </footer>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>

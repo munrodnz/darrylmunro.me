@@ -15,6 +15,7 @@ links:
   - label: "Pattern library"
     url: "/patterns"
 relatedGuides: ["daz-method"]
+relatedModels: ["nz-infrastructure-contractor"]
 relatedPatterns: []
 faq:
   - q: "Do I need a data warehouse to model data?"

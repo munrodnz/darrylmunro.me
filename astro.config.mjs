@@ -26,6 +26,12 @@ const publishedLastmod = (dir, urlPrefix) =>
     });
 const patternLastmod = Object.fromEntries(publishedLastmod("./src/content/patterns", "/patterns/"));
 const guideLastmod = Object.fromEntries(publishedLastmod("./src/content/guides", "/"));
+// Published data models (src/data/models.ts) and their reviewed dates.
+const modelLastmod = Object.fromEntries(
+  [...readFileSync("./src/data/models.ts", "utf8").matchAll(/slug:\s*"([^"]+)"[\s\S]*?(?:reviewed|published):\s*"([\d-]+)"[\s\S]*?draft:\s*(true|false)/g)]
+    .filter((x) => x[3] === "false")
+    .map((x) => [`/models/${x[1]}`, x[2]]),
+);
 const hasPatterns = Object.keys(patternLastmod).length > 0;
 
 // https://astro.build/config
@@ -50,6 +56,9 @@ export default defineConfig({
 	    sitemap({
 	      filter: (page) => {
 	        if (!false && page.endsWith("/archives")) return false;
+        // Explorer pages are noindexed working tools; their overview pages carry the content.
+        if (page.replace(/\/$/, "").endsWith("/explorer")) return false;
+        if (Object.keys(modelLastmod).length === 0 && page.replace(/\/$/, "").endsWith("/models")) return false;
         // The pattern index is noindexed until the first pattern is published.
         if (!hasPatterns && page.replace(/\/$/, "").endsWith("/patterns")) return false;
         return true;
@@ -94,6 +103,12 @@ export default defineConfig({
 	          item.priority = 0.9;
 	          item.changefreq = ChangeFreqEnum.MONTHLY;
 	          item.lastmod = new Date(guideLastmod[new URL(url).pathname.replace(/\/$/, '')]).toISOString();
+	        }
+	        else if (url.includes('/models')) {
+	          const path = new URL(url).pathname.replace(/\/$/, '');
+	          item.priority = path === '/models' ? 0.7 : 0.8;
+	          item.changefreq = ChangeFreqEnum.MONTHLY;
+	          if (modelLastmod[path]) item.lastmod = new Date(modelLastmod[path]).toISOString();
 	        }
 	        else if (url.includes('/patterns')) {
 	          const path = new URL(url).pathname.replace(/\/$/, '');
