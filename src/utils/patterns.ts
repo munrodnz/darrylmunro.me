@@ -22,11 +22,15 @@ const AUTHOR_SAME_AS = [
 ];
 
 // ── Queries ─────────────────────────────────────────────────────
-/** Published patterns only in production; drafts are visible in `bun run dev`. */
+/**
+ * Drafts are visible in `bun run dev` and on Vercel preview deployments (so a
+ * pull request preview can be reviewed), never in production.
+ */
+export const showDrafts = !import.meta.env.PROD || process.env.VERCEL_ENV === "preview";
+
+/** Published patterns, plus drafts where showDrafts is true. */
 export async function getPatterns(): Promise<Pattern[]> {
-  const all = await getCollection("patterns", ({ data }) =>
-    import.meta.env.PROD ? !data.draft : true
-  );
+  const all = await getCollection("patterns", ({ data }) => showDrafts || !data.draft);
   return all.sort((a, b) => a.data.title.localeCompare(b.data.title));
 }
 

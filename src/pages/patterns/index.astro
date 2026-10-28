@@ -29,7 +29,7 @@ const domains = Object.entries(DOMAINS)
   description={LIBRARY_DESCRIPTION}
   ogType="website"
   structuredData={libraryJsonLd(patterns, site)}
-  noindex={patterns.length === 0}
+  noindex={!patterns.some((p) => !p.data.draft)}
 >
   <Header />
   <main id="main-content" class="relative z-1">
@@ -87,7 +87,7 @@ const domains = Object.entries(DOMAINS)
                   <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-2.5">{BOUNDARIES[p.data.boundary].label}</div>
                   <h3 class="font-[var(--font-head)] text-[17px] font-semibold text-foreground mb-2 tracking-[-0.01em] group-hover:text-accent transition-colors">{p.data.title}</h3>
                   <p class="text-sm text-text-secondary leading-relaxed mb-4">{p.data.problem}</p>
-                  <span class="text-xs text-muted font-[var(--font-mono)]">Ladder rung {p.data.ladderRung}</span>
+                  <span class="text-xs text-muted font-[var(--font-mono)]">Ladder rung {p.data.ladderRung}{p.data.draft && <span class="text-gold"> · Draft</span>}</span>
                 </a>
               </li>
             ))}

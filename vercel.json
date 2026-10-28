@@ -5,6 +5,50 @@
   "framework": "astro",
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "darrylmunro.me"
+        }
+      ],
+      "destination": "https://www.darrylmunro.nz/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.darrylmunro.me"
+        }
+      ],
+      "destination": "https://www.darrylmunro.nz/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "darrylmunro.com"
+        }
+      ],
+      "destination": "https://www.darrylmunro.nz/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.darrylmunro.com"
+        }
+      ],
+      "destination": "https://www.darrylmunro.nz/:path*",
+      "permanent": true
+    },
+    {
       "source": "/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug",
       "destination": "/posts/:slug",
       "permanent": true

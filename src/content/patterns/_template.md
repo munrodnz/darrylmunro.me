@@ -78,7 +78,7 @@ published: 2026-10-27
 # dateModified and sitemap lastmod. Freshness matters for search and AI engines.
 reviewed: 2026-10-27
 
-# true = visible in `bun run dev` only. Set to false to publish.
+# true = visible in `bun run dev` and Vercel previews only. Set to false to publish.
 draft: true
 
 # Credit where a pattern draws on someone else's work. Delete the item if not.

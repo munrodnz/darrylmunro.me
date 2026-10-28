@@ -50,6 +50,7 @@ const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tr
   ogType="article"
   structuredData={patternJsonLd(pattern, site)}
   markdownPath={patternMarkdownPath(pattern.id)}
+  noindex={d.draft}
 >
   <Header />
   <main id="main-content" class="relative z-1">
@@ -64,6 +65,12 @@ const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tr
           <li><a href={`${LIBRARY_PATH}#${d.domain}`} class="hover:text-accent transition-colors hover:no-underline">{DOMAINS[d.domain].label}</a></li>
         </ol>
       </nav>
+
+      {d.draft && (
+        <div role="note" class="mt-6 rounded-md border border-gold px-4 py-3 font-[var(--font-mono)] text-xs uppercase tracking-[0.08em] text-gold" style="border-color: var(--gold);">
+          Draft: only visible in dev and preview deployments
+        </div>
+      )}
 
       <header class="pt-8 pb-8">
         <div class={`${eyebrow} mb-3`}>{DOMAINS[d.domain].label} · {BOUNDARIES[d.boundary].label}</div>
