@@ -27,11 +27,7 @@ faq:
     a: "Yes. AI tools answer confidently from whatever definitions they find. If finance and operations define a customer differently, the AI will mix them. Agree the definitions first."
 published: 2026-10-28
 reviewed: 2026-10-28
-# BEFORE PUBLISHING: drafted by Claude as a general guide to ladder rung 3.
-# It contains no client examples or personal anecdotes. Add your own view and
-# experience where it helps, check the wording, then delete this note and set
-# draft to false.
-draft: true
+draft: false
 ---
 
 ## What it is

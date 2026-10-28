@@ -28,11 +28,7 @@ faq:
     a: "Yes. The method and templates are MIT licensed on GitHub. It is an early community draft, and feedback from real use is welcome."
 published: 2026-10-28
 reviewed: 2026-10-28
-# BEFORE PUBLISHING: drafted by Claude from the daz-method repository README
-# and templates, plus your own definitions of the three-way split, the four
-# traps, the saved-time test and the significant line. Check the wording, then
-# delete this note and set draft to false.
-draft: true
+draft: false
 ---
 
 ## Why it exists
