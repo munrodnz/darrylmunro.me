@@ -16,6 +16,13 @@ export interface Props {
   pubDatetime?: Date;
   modDatetime?: Date | null;
   scrollSmooth?: boolean;
+  /** Replaces the default BlogPosting JSON-LD (e.g. a full @graph for a pattern page). */
+  structuredData?: object;
+  /** og:type — "article" for content pages, "website" otherwise. */
+  ogType?: "website" | "article";
+  /** Path to a plain-markdown version of this page, advertised to AI crawlers. */
+  markdownPath?: string;
+  noindex?: boolean;
 }
 
 const {
@@ -28,11 +35,15 @@ const {
   pubDatetime,
   modDatetime,
   scrollSmooth = false,
+  structuredData: structuredDataOverride,
+  ogType,
+  markdownPath,
+  noindex = false,
 } = Astro.props;
 
 const socialImageURL = new URL(ogImage, Astro.url);
 
-const structuredData = {
+const structuredData = structuredDataOverride ?? {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   headline: `${title}`,
@@ -71,8 +82,16 @@ const structuredData = {
     <meta name="description" content={description} />
     <meta name="author" content={author} />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <!-- Machine-readable versions for AI engines and agents -->
+    {markdownPath && (
+      <link rel="alternate" type="text/markdown" href={new URL(markdownPath, Astro.url)} title={`${title} (Markdown)`} />
+    )}
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
 
     <!-- Open Graph / Facebook -->
+    {ogType && <meta property="og:type" content={ogType} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />

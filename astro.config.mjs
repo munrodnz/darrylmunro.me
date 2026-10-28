@@ -8,8 +8,24 @@ import remarkToc from "remark-toc";
 import remarkCollapse from "remark-collapse";
 import { remarkLazyLoadImages } from "./src/utils/remarkLazyLoadImages.mjs";
 import AstroPWA from "@vite-pwa/astro";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 
 const SITE_URL = "https://darrylmunro.me/";
+
+// Published patterns and their last-reviewed dates, for sitemap <lastmod>.
+// Drafts (draft: true, or no draft field — the schema default) are excluded.
+const PATTERNS_DIR = "./src/content/patterns";
+const patternLastmod = Object.fromEntries(
+  (existsSync(PATTERNS_DIR) ? readdirSync(PATTERNS_DIR) : [])
+    .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
+    .map((f) => [f.replace(/\.md$/, ""), readFileSync(`${PATTERNS_DIR}/${f}`, "utf8").split("---")[1] ?? ""])
+    .filter(([, fm]) => /^draft:\s*false\s*$/m.test(fm))
+    .map(([slug, fm]) => {
+      const date = (fm.match(/^reviewed:\s*["']?([\d-]+)/m) ?? fm.match(/^published:\s*["']?([\d-]+)/m))?.[1];
+      return [`/patterns/${slug}`, date];
+    }),
+);
+const hasPatterns = Object.keys(patternLastmod).length > 0;
 
 // https://astro.build/config
 export default defineConfig({
@@ -33,6 +49,8 @@ export default defineConfig({
 	    sitemap({
 	      filter: (page) => {
 	        if (!false && page.endsWith("/archives")) return false;
+        // The pattern index is noindexed until the first pattern is published.
+        if (!hasPatterns && page.replace(/\/$/, "").endsWith("/patterns")) return false;
         return true;
       },
 	      serialize: (item) => {
@@ -70,6 +88,12 @@ export default defineConfig({
 	        else if (url.includes('/tags/')) {
 	          item.priority = 0.1;
 	          item.changefreq = ChangeFreqEnum.YEARLY;
+	        }
+	        else if (url.includes('/patterns')) {
+	          const path = new URL(url).pathname.replace(/\/$/, '');
+	          item.priority = path === '/patterns' ? 0.9 : 0.8;
+	          item.changefreq = ChangeFreqEnum.MONTHLY;
+	          if (patternLastmod[path]) item.lastmod = new Date(patternLastmod[path]).toISOString();
 	        }
 	        else if (url.match(/\/page\/\d+$/)) {
 	          item.priority = 0.4;

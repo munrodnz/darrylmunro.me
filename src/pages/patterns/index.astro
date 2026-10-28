@@ -1,0 +1,101 @@
+---
+/**
+ * Pattern library landing page. Every pattern renders in the HTML, grouped by
+ * domain with one anchor per domain, so crawlers see every link without JS.
+ * While nothing is published the page is noindexed.
+ */
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import { BOUNDARIES, DOMAINS } from "@/data/patternTaxonomy";
+import Layout from "@/layouts/Layout.astro";
+import {
+  getPatterns,
+  LIBRARY_DESCRIPTION,
+  LIBRARY_NAME,
+  libraryJsonLd,
+  patternPath,
+} from "@/utils/patterns";
+
+const site = Astro.site ?? new URL(SITE.website);
+const patterns = await getPatterns();
+const domains = Object.entries(DOMAINS)
+  .map(([key, domain]) => ({ key, ...domain, items: patterns.filter((p) => p.data.domain === key) }))
+  .filter((d) => d.items.length > 0);
+---
+
+<Layout
+  title={`${LIBRARY_NAME}: pragmatic architecture patterns for NZ organisations`}
+  description={LIBRARY_DESCRIPTION}
+  ogType="website"
+  structuredData={libraryJsonLd(patterns, site)}
+  noindex={patterns.length === 0}
+>
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <section class="pt-22 pb-10 relative" style="border: none;">
+        <div class="absolute left-0 top-20 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+
+        <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+          Patterns
+          <span class="block w-8 h-px bg-accent-dim"></span>
+        </div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          {LIBRARY_NAME}
+        </h1>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px] mb-4">{LIBRARY_DESCRIPTION}</p>
+        <p class="text-[17px] leading-[1.75] text-text-secondary max-w-[580px]">
+          Every pattern starts with the cheapest thing that could work. The ladder runs from fixing the process,
+          through using the tools you already own, modelling the data properly and building something, to adding AI.
+          Climb only as far as the problem forces you.
+        </p>
+
+        {domains.length > 1 && (
+          <nav aria-label="Domains" class="mt-6">
+            <ul class="flex flex-wrap gap-2">
+              {domains.map((d) => (
+                <li>
+                  <a href={`#${d.key}`} class="inline-block font-[var(--font-mono)] text-[11px] uppercase tracking-[0.08em] text-text-secondary border border-border rounded px-2.5 py-1 hover:text-accent hover:border-accent-dim transition-colors hover:no-underline">
+                    {d.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      {domains.length === 0 && (
+        <section class="px-0 py-12" style="border: none;">
+          <p class="text-[17px] text-text-secondary">The first patterns are being written. Check back soon.</p>
+        </section>
+      )}
+
+      {domains.map((d) => (
+        <section id={d.key} aria-labelledby={`h-${d.key}`} class="px-0 py-12 scroll-mt-20" style="border: none;">
+          <h2 id={`h-${d.key}`} class="font-[var(--font-head)] text-[22px] font-semibold text-foreground tracking-[-0.01em] mb-2">{d.label}</h2>
+          <p class="text-text-secondary mb-6">{d.blurb}</p>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {d.items.map((p) => (
+              <li>
+                <a href={patternPath(p.id)} class="group bg-background-raised border border-border rounded-md p-6 transition-all duration-200 hover:border-accent-dim hover:-translate-y-0.5 relative overflow-hidden block h-full hover:no-underline">
+                  <div class="absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style="background: linear-gradient(90deg, var(--accent), var(--gold));"></div>
+                  <div class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-2.5">{BOUNDARIES[p.data.boundary].label}</div>
+                  <h3 class="font-[var(--font-head)] text-[17px] font-semibold text-foreground mb-2 tracking-[-0.01em] group-hover:text-accent transition-colors">{p.data.title}</h3>
+                  <p class="text-sm text-text-secondary leading-relaxed mb-4">{p.data.problem}</p>
+                  <span class="text-xs text-muted font-[var(--font-mono)]">Ladder rung {p.data.ladderRung}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+
+    </div>
+  </main>
+  <Footer />
+</Layout>
