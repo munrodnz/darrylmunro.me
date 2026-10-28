@@ -5,6 +5,50 @@
   "framework": "astro",
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "darrylmunro.me"
+        }
+      ],
+      "destination": "https://www.darrylmunro.nz/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.darrylmunro.me"
+        }
+      ],
+      "destination": "https://www.darrylmunro.nz/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "darrylmunro.com"
+        }
+      ],
+      "destination": "https://www.darrylmunro.nz/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.darrylmunro.com"
+        }
+      ],
+      "destination": "https://www.darrylmunro.nz/:path*",
+      "permanent": true
+    },
+    {
       "source": "/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug",
       "destination": "/posts/:slug",
       "permanent": true
@@ -48,7 +92,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self' https://darrylmunro.me https://*.vercel.app https://platform.twitter.com https://syndication.twitter.com https://player.vimeo.com https://vimeo.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: https://darrylmunro.me https://*.vercel.app https://platform.twitter.com https://cdn.syndication.twimg.com https://player.vimeo.com https://vercel.live https://va.vercel-scripts.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://darrylmunro.me https://*.vercel.app https://platform.twitter.com https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://darrylmunro.me https://*.vercel.app https://fonts.gstatic.com; connect-src 'self' https://darrylmunro.me https://*.vercel.app https://platform.twitter.com https://player.vimeo.com https://vimeo.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://darrylmunro.substack.com https://challenges.cloudflare.com; media-src 'self' https://darrylmunro.me https://*.vercel.app https://player.vimeo.com https://vimeo.com; object-src 'none'; frame-ancestors 'none'; frame-src https://platform.twitter.com https://syndication.twitter.com https://player.vimeo.com https://vercel.live https://www.youtube.com https://youtube.com https://*.youtube.com https://www.youtube-nocookie.com https://*.youtube-nocookie.com https://open.spotify.com https://*.spotify.com https://challenges.cloudflare.com; worker-src 'self' blob:"
+          "value": "default-src 'self' https://www.darrylmunro.nz https://darrylmunro.me https://*.vercel.app https://platform.twitter.com https://syndication.twitter.com https://player.vimeo.com https://vimeo.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: https://www.darrylmunro.nz https://darrylmunro.me https://*.vercel.app https://platform.twitter.com https://cdn.syndication.twimg.com https://player.vimeo.com https://vercel.live https://va.vercel-scripts.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://www.darrylmunro.nz https://darrylmunro.me https://*.vercel.app https://platform.twitter.com https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://www.darrylmunro.nz https://darrylmunro.me https://*.vercel.app https://fonts.gstatic.com; connect-src 'self' https://www.darrylmunro.nz https://darrylmunro.me https://*.vercel.app https://platform.twitter.com https://player.vimeo.com https://vimeo.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://darrylmunro.substack.com https://challenges.cloudflare.com; media-src 'self' https://www.darrylmunro.nz https://darrylmunro.me https://*.vercel.app https://player.vimeo.com https://vimeo.com; object-src 'none'; frame-ancestors 'none'; frame-src https://platform.twitter.com https://syndication.twitter.com https://player.vimeo.com https://vercel.live https://www.youtube.com https://youtube.com https://*.youtube.com https://www.youtube-nocookie.com https://*.youtube-nocookie.com https://open.spotify.com https://*.spotify.com https://challenges.cloudflare.com; worker-src 'self' blob:"
         }
       ]
     }

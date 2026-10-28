@@ -1,0 +1,153 @@
+---
+/**
+ * Guide pages at the site root (e.g. /daz-method, /data-modelling), built from
+ * src/content/guides. Static pages such as /about always take priority.
+ */
+import { getEntries, render } from "astro:content";
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import Layout from "@/layouts/Layout.astro";
+import {
+  type Guide,
+  getGuides,
+  guideJsonLd,
+  guideLastModified,
+  guideMarkdownPath,
+  guidePath,
+} from "@/utils/guides";
+import { isoDate, patternPath } from "@/utils/patterns";
+
+export async function getStaticPaths() {
+  const guides = await getGuides();
+  return guides.map((guide) => ({ params: { guide: guide.id }, props: { guide, guides } }));
+}
+
+const { guide, guides } = Astro.props as { guide: Guide; guides: Guide[] };
+const { Content } = await render(guide);
+const d = guide.data;
+const site = Astro.site ?? new URL(SITE.website);
+const modified = guideLastModified(guide);
+const relatedPatterns = d.relatedPatterns.length ? await getEntries(d.relatedPatterns) : [];
+const relatedGuides = guides.filter((g) => d.relatedGuides.includes(g.id));
+const fmt = (date: Date) => date.toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" });
+const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tracking-[-0.01em] mb-3";
+---
+
+<Layout
+  title={d.seoTitle ?? `${d.title} | ${SITE.title}`}
+  description={d.description}
+  pubDatetime={d.published}
+  modDatetime={modified}
+  ogType="article"
+  structuredData={guideJsonLd(guide, site)}
+  markdownPath={guideMarkdownPath(guide.id)}
+  noindex={d.draft}
+>
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      {d.draft && (
+        <div role="note" class="mt-8 rounded-md border px-4 py-3 font-[var(--font-mono)] text-xs uppercase tracking-[0.08em] text-gold" style="border-color: var(--gold);">
+          Draft: only visible in dev and preview deployments
+        </div>
+      )}
+
+      <section class="pt-16 pb-8 relative" style="border: none;">
+        <div class="absolute left-0 top-14 bottom-4 w-[3px] rounded-sm opacity-60" style="background: linear-gradient(180deg, var(--accent) 0%, var(--gold) 100%);"></div>
+        {d.eyebrow && (
+          <div class="font-[var(--font-mono)] text-xs font-medium text-accent tracking-[0.12em] uppercase mb-5 flex items-center gap-2.5">
+            {d.eyebrow}
+            <span class="block w-8 h-px bg-accent-dim"></span>
+          </div>
+        )}
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          {d.title}
+        </h1>
+        <p class="text-xs text-muted font-[var(--font-mono)]">
+          Reviewed <time datetime={isoDate(modified)}>{fmt(modified)}</time>
+        </p>
+      </section>
+
+      <!-- Answer first: the paragraph search and AI engines lift -->
+      <section aria-labelledby="in-short" class="bg-background-raised border border-border rounded-md p-6 mb-6" style="border-left: 3px solid var(--accent);">
+        <h2 id="in-short" class="font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase mb-2">In short</h2>
+        <p class="text-[17px] leading-[1.75] text-foreground">{d.summary}</p>
+      </section>
+
+      {d.links.length > 0 && (
+        <div class="flex flex-wrap gap-3 mb-10">
+          {d.links.map((l) => (
+            <a href={l.url} rel={/^https?:/.test(l.url) ? "noopener" : undefined} class="inline-flex items-center gap-2 rounded-md border border-accent-dim px-4 py-2 text-sm text-accent hover:bg-background-raised transition-colors hover:no-underline">
+              {l.label}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <div class="border-t border-border"></div>
+
+      <section class="px-0 py-10" style="border: none;">
+        <article class="prose max-w-none prose-img:border-0 prose-img:rounded-md prose-headings:font-[var(--font-head)]">
+          <Content />
+        </article>
+      </section>
+
+      {d.faq.length > 0 && (
+        <section aria-labelledby="faq" class="px-0 mb-10">
+          <h2 id="faq" class={h2}>Common questions</h2>
+          <div class="divide-y divide-border border-y border-border">
+            {d.faq.map(({ q, a }) => (
+              <details class="group py-4">
+                <summary class="cursor-pointer font-[var(--font-head)] font-semibold text-foreground group-open:text-accent">{q}</summary>
+                <p class="mt-2 text-[16px] leading-[1.7] text-text-secondary">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {(relatedPatterns.length > 0 || relatedGuides.length > 0) && (
+        <nav aria-labelledby="related" class="mb-10">
+          <h2 id="related" class={h2}>Related</h2>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {relatedGuides.map((g) => (
+              <li>
+                <a href={guidePath(g.id)} class="block h-full bg-background-raised border border-border rounded-md p-4 hover:border-accent-dim transition-colors hover:no-underline">
+                  <span class="block font-[var(--font-mono)] text-[10px] uppercase tracking-[0.08em] text-accent mb-1">Guide</span>
+                  <span class="block font-[var(--font-head)] font-semibold text-foreground mb-1">{g.data.title}</span>
+                  <span class="block text-sm text-text-secondary leading-relaxed">{g.data.description}</span>
+                </a>
+              </li>
+            ))}
+            {relatedPatterns.map((p) => (
+              <li>
+                <a href={patternPath(p.id)} class="block h-full bg-background-raised border border-border rounded-md p-4 hover:border-accent-dim transition-colors hover:no-underline">
+                  <span class="block font-[var(--font-mono)] text-[10px] uppercase tracking-[0.08em] text-accent mb-1">Pattern</span>
+                  <span class="block font-[var(--font-head)] font-semibold text-foreground mb-1">{p.data.title}</span>
+                  <span class="block text-sm text-text-secondary leading-relaxed">{p.data.description}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
+      <div class="border-t border-border"></div>
+
+      <footer class="px-0 py-8 text-sm text-text-secondary leading-relaxed space-y-2">
+        <p>
+          Written by <a href="/about" rel="author" class="text-accent">{SITE.author}</a>, Ōtepoti Dunedin.
+          First published <time datetime={isoDate(d.published)}>{fmt(d.published)}</time>.
+        </p>
+        <p class="text-xs text-muted">
+          <a href={guideMarkdownPath(guide.id)} class="hover:text-accent transition-colors">Plain-text version</a> for tools and AI assistants.
+        </p>
+      </footer>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>

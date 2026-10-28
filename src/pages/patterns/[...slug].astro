@@ -1,0 +1,214 @@
+---
+/**
+ * Pattern page. Section order is fixed on purpose — it is the Daz Method on a
+ * page: answer first, the pain, the symptoms, the cheaper rungs, THEN the
+ * pattern, then where it stops being BAU. Authors write only the narrative
+ * body; everything structured comes from frontmatter so pages stay consistent.
+ */
+import { getEntries, render } from "astro:content";
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import { SITE } from "@/config";
+import { BOUNDARIES, DOMAINS, LADDER } from "@/data/patternTaxonomy";
+import Layout from "@/layouts/Layout.astro";
+import { getGuides } from "@/utils/guides";
+import {
+  getPatterns,
+  isoDate,
+  LIBRARY_NAME,
+  LIBRARY_PATH,
+  ladderLabel,
+  lastModified,
+  type Pattern,
+  patternJsonLd,
+  patternMarkdownPath,
+  patternPath,
+} from "@/utils/patterns";
+
+export async function getStaticPaths() {
+  const patterns = await getPatterns();
+  return patterns.map((pattern) => ({ params: { slug: pattern.id }, props: { pattern } }));
+}
+
+const { pattern } = Astro.props as { pattern: Pattern };
+const { Content } = await render(pattern);
+const d = pattern.data;
+const site = Astro.site ?? new URL(SITE.website);
+const related = d.related.length ? await getEntries(d.related) : [];
+const modified = lastModified(pattern);
+const guideIds = new Set((await getGuides()).map((g) => g.id));
+const fmt = (date: Date) => date.toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" });
+
+const eyebrow = "font-[var(--font-mono)] text-[11px] text-accent tracking-[0.08em] uppercase";
+const h2 = "font-[var(--font-head)] text-[22px] font-semibold text-foreground tracking-[-0.01em] mb-3";
+---
+
+<Layout
+  title={d.seoTitle ?? `${d.title} | ${LIBRARY_NAME}`}
+  description={d.description}
+  ogImage={d.ogImage?.src}
+  pubDatetime={d.published}
+  modDatetime={modified}
+  ogType="article"
+  structuredData={patternJsonLd(pattern, site)}
+  markdownPath={patternMarkdownPath(pattern.id)}
+  noindex={d.draft}
+>
+  <Header />
+  <main id="main-content" class="relative z-1">
+    <div class="mx-auto max-w-[740px] px-6">
+
+      <nav aria-label="Breadcrumb" class="pt-8">
+        <ol class="flex flex-wrap items-center gap-1.5 text-sm text-text-secondary">
+          <li><a href="/" class="hover:text-accent transition-colors hover:no-underline">Home</a></li>
+          <li aria-hidden="true">›</li>
+          <li><a href={LIBRARY_PATH} class="hover:text-accent transition-colors hover:no-underline">{LIBRARY_NAME}</a></li>
+          <li aria-hidden="true">›</li>
+          <li><a href={`${LIBRARY_PATH}#${d.domain}`} class="hover:text-accent transition-colors hover:no-underline">{DOMAINS[d.domain].label}</a></li>
+        </ol>
+      </nav>
+
+      {d.draft && (
+        <div role="note" class="mt-6 rounded-md border border-gold px-4 py-3 font-[var(--font-mono)] text-xs uppercase tracking-[0.08em] text-gold" style="border-color: var(--gold);">
+          Draft: only visible in dev and preview deployments
+        </div>
+      )}
+
+      <header class="pt-8 pb-8">
+        <div class={`${eyebrow} mb-3`}>{DOMAINS[d.domain].label} · {BOUNDARIES[d.boundary].label}</div>
+        <h1 class="font-[var(--font-head)] text-[clamp(32px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-foreground mb-4">
+          {d.title}
+        </h1>
+        <div class="flex flex-wrap items-center gap-4 text-xs text-muted font-[var(--font-mono)]">
+          <span>Ladder rung {d.ladderRung} · {ladderLabel(d.ladderRung)}</span>
+          <span>Reviewed <time datetime={isoDate(modified)}>{fmt(modified)}</time></span>
+        </div>
+      </header>
+
+      <!-- 1. Answer first: the paragraph search and AI engines lift -->
+      <section aria-labelledby="in-short" class="bg-background-raised border border-border border-l-[3px] border-l-accent rounded-md p-6 mb-10" style="border-left-color: var(--accent);">
+        <h2 id="in-short" class={`${eyebrow} mb-2`}>In short</h2>
+        <p class="text-[17px] leading-[1.75] text-foreground">{d.summary}</p>
+      </section>
+
+      <!-- 2. The pain, before any technology -->
+      <section aria-labelledby="problem" class="px-0 mb-10">
+        <h2 id="problem" class={h2}>The problem</h2>
+        <p class="text-[17px] leading-[1.75] text-text-secondary">{d.problem}</p>
+      </section>
+
+      <!-- 3. Recognisable symptoms -->
+      <section aria-labelledby="symptoms" class="px-0 mb-10">
+        <h2 id="symptoms" class={h2}>You'll know you have it when</h2>
+        <ul class="list-disc pl-5 space-y-1.5 text-[17px] leading-[1.7] text-text-secondary">
+          {d.symptoms.map((s) => <li>{s}</li>)}
+        </ul>
+      </section>
+
+      <!-- 4. Climb only as far as the problem forces you -->
+      <section aria-labelledby="try-first" class="px-0 mb-10">
+        <h2 id="try-first" class={h2}>Before you build: try these first</h2>
+        <p class="text-[17px] leading-[1.75] text-text-secondary mb-5">
+          Climb only as far as the problem forces you. This pattern sits at rung {d.ladderRung} of the {guideIds.has("daz-method") ? <a href="/daz-method" class="text-accent">Daz Method</a> : "Daz Method"} ladder.
+        </p>
+        <ol class="space-y-3">
+          {Object.entries(LADDER).map(([n, rung]) => {
+            const rungNo = Number(n);
+            const steps = d.tryFirst.filter((t) => t.rung === rungNo);
+            const here = rungNo === d.ladderRung;
+            const quiet = !steps.length && !here;
+            return (
+              <li class:list={["flex gap-4 rounded-md border p-4", here ? "border-accent-dim bg-background-raised" : "border-border", { "opacity-50": quiet }]}>
+                <span class:list={["font-[var(--font-mono)] text-sm font-medium w-6 shrink-0", here ? "text-accent" : "text-muted"]}>{rungNo}</span>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <strong class:list={["font-[var(--font-head)] text-[15px] font-semibold", here ? "text-accent" : "text-foreground"]}>{rungNo === 3 && guideIds.has("data-modelling") ? <a href="/data-modelling" class="hover:underline">{rung.label}</a> : rung.label}</strong>
+                    {here && <span class="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.08em] text-accent border border-accent-dim rounded px-1.5 py-0.5">This pattern</span>}
+                  </div>
+                  {steps.map((t) => <p class="text-[15px] leading-[1.7] text-text-secondary mt-1">{t.action}</p>)}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
+      <div class="border-t border-border"></div>
+
+      <!-- 5. Author's narrative: The pattern / NZ reality check / Trade-offs and traps / Worked example -->
+      <section class="px-0 py-10" style="border: none;">
+        <article class="prose max-w-none prose-img:border-0 prose-img:rounded-md prose-headings:font-[var(--font-head)]">
+          <Content />
+        </article>
+      </section>
+
+      <!-- 6. The significant line -->
+      <section aria-labelledby="significant" class="border border-accent-dim rounded-md p-6 mb-10">
+        <h2 id="significant" class={h2}>Where it stops being BAU</h2>
+        <p class="text-[17px] leading-[1.75] text-text-secondary">{d.significantLine}</p>
+      </section>
+
+      {d.faq.length > 0 && (
+        <section aria-labelledby="faq" class="px-0 mb-10">
+          <h2 id="faq" class={h2}>Common questions</h2>
+          <div class="divide-y divide-border border-y border-border">
+            {d.faq.map(({ q, a }) => (
+              <details class="group py-4">
+                <summary class="cursor-pointer font-[var(--font-head)] font-semibold text-foreground group-open:text-accent">{q}</summary>
+                <p class="mt-2 text-[16px] leading-[1.7] text-text-secondary">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {related.length > 0 && (
+        <nav aria-labelledby="related" class="mb-10">
+          <h2 id="related" class={h2}>Related patterns</h2>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {related.map((r) => (
+              <li>
+                <a href={patternPath(r.id)} class="block h-full bg-background-raised border border-border rounded-md p-4 hover:border-accent-dim transition-colors hover:no-underline">
+                  <span class="block font-[var(--font-head)] font-semibold text-foreground mb-1">{r.data.title}</span>
+                  <span class="block text-sm text-text-secondary leading-relaxed">{r.data.description}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
+      <div class="border-t border-border"></div>
+
+      <footer class="px-0 py-8 text-sm text-text-secondary leading-relaxed space-y-2">
+        <p>
+          Written by <a href="/about" rel="author" class="text-accent">{SITE.author}</a>, Ōtepoti Dunedin.
+          First published <time datetime={isoDate(d.published)}>{fmt(d.published)}</time>.
+        </p>
+        {d.inspiredBy.length > 0 && (
+          <p>
+            Draws on{" "}
+            {d.inspiredBy.map((s, i) => (
+              <>
+                {i > 0 && (i === d.inspiredBy.length - 1 ? " and " : ", ")}
+                <a href={s.url} rel="noopener" class="text-accent">{s.name}</a>
+                {s.author && <> by {s.author}</>}
+              </>
+            ))}{". The framing, ladder placement and NZ context are mine."}
+          </p>
+        )}
+        <p class="text-xs text-muted">
+          <a href={patternMarkdownPath(pattern.id)} class="hover:text-accent transition-colors">Plain-text version</a> for tools and AI assistants.
+        </p>
+        <p class="pt-4">
+          <a href={LIBRARY_PATH} class="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-accent transition-colors hover:no-underline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            All patterns
+          </a>
+        </p>
+      </footer>
+
+    </div>
+  </main>
+  <Footer />
+</Layout>

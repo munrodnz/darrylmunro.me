@@ -22,7 +22,7 @@ Strong opinions, loosely held. Enterprise architecture, AI, neurodiversity, and 
 
 ---
 
-*This is the markdown-only version of darrylmunro.me. Visit [darrylmunro.me](https://darrylmunro.me) for the full experience.*`;
+*This is the markdown-only version of darrylmunro.nz. Visit [darrylmunro.nz](https://www.darrylmunro.nz) for the full experience.*`;
 
   return new Response(markdownContent, {
     status: 200,
