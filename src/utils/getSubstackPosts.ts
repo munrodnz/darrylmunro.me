@@ -1,10 +1,19 @@
 // ── SUBSTACK ARCHIVE FETCHER ──────────────────────────────────
 // Fetches ALL posts from a Substack publication at build time
 // using the archive API (no post limit, unlike RSS which caps at 20).
+// Public and paid posts are both listed; paid posts link to Substack's
+// free preview and are flagged so the UI can label them.
+// New posts appear after the next build. The "Substack rebuild" GitHub
+// Action triggers that build hourly when a new post has been published.
 // To change the Substack, update the constants below.
 
 const SUBSTACK_BASE = "https://darrylmunro.substack.com";
 const PAGE_SIZE = 50; // max allowed by the API
+
+// "everyone" = public. "only_paid" = paid subscribers, with a free preview
+// that anyone can read. Other audiences (e.g. free-subscriber-only or
+// founding-member posts) are left off the site.
+const LISTED_AUDIENCES = new Set(["everyone", "only_paid"]);
 
 export interface SubstackPost {
   title: string;
@@ -13,6 +22,8 @@ export interface SubstackPost {
   pubDatetime: Date;
   heroImage?: string;
   source: "substack";
+  /** True when the post is for paid subscribers; the link lands on Substack's free preview. */
+  paid: boolean;
 }
 
 interface SubstackArchiveItem {
@@ -53,7 +64,7 @@ export async function getSubstackPosts(): Promise<SubstackPost[]> {
     }
 
     return allItems
-      .filter((item) => item.audience === "everyone") // only public posts
+      .filter((item) => LISTED_AUDIENCES.has(item.audience))
       .map((item) => ({
         title: item.title,
         description: (item.subtitle || item.description || "").slice(0, 300),
@@ -61,6 +72,7 @@ export async function getSubstackPosts(): Promise<SubstackPost[]> {
         pubDatetime: new Date(item.post_date),
         heroImage: item.cover_image || undefined,
         source: "substack" as const,
+        paid: item.audience === "only_paid",
       }));
   } catch (error) {
     console.warn("Error fetching Substack archive:", error);

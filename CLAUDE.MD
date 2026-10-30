@@ -48,7 +48,7 @@ bun run preview
 - `/src/components/` - Reusable UI components
 - `/src/layouts/` - Page layouts and templates
 - `/src/styles/` - CSS styles including Tailwind customizations
-- `/src/utils/` - Utility functions (including Substack RSS fetcher)
+- `/src/utils/` - Utility functions (including the Substack archive fetcher, `getSubstackPosts.ts`)
 
 ### Key Data Files
 
@@ -57,6 +57,11 @@ bun run preview
 - `src/constants.ts` — Social media links for components
 - `src/pages/services.astro` — Service offerings (editable inline)
 - `src/pages/contact.astro` — Contact form (wire to CRM via action attribute)
+
+### Substack posts
+
+- Substack posts are fetched at build time from the archive API, not stored in the repo. Public and paid posts are listed; paid ones get a "Paid" label and link to the free preview.
+- `.github/workflows/substack-rebuild.yml` checks Substack hourly and calls the Vercel deploy hook (GitHub secret `VERCEL_DEPLOY_HOOK`) when a post has been published since the last check. Run it manually from the Actions tab to force a rebuild.
 
 ## Tech Stack
 

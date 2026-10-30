@@ -144,6 +144,9 @@ const featuredProjects = allProjects
                   {isExternal && (
                     <span class="font-[var(--font-mono)] text-[10px] text-gold tracking-[0.06em] uppercase flex-shrink-0">Substack</span>
                   )}
+                  {post.paid && (
+                    <span class="font-[var(--font-mono)] text-[10px] text-muted tracking-[0.06em] uppercase flex-shrink-0" title="For paid subscribers. The link opens the free preview.">Paid</span>
+                  )}
                 </div>
                 <span class="font-[var(--font-mono)] text-xs text-muted whitespace-nowrap">{dateStr}</span>
               </div>
