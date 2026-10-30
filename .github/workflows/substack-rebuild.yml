@@ -1,0 +1,74 @@
+name: Substack rebuild
+
+# Substack has no webhook for new posts, and the site only fetches Substack
+# posts at build time. This checks the Substack archive once an hour and,
+# if a listed post (public or paid) was published since the last check,
+# calls the Vercel deploy hook so the site rebuilds and picks it up.
+#
+# Setup: create a Deploy Hook in Vercel (project darrylmunro-me,
+# Settings > Git > Deploy Hooks, branch main) and save its URL as the
+# repository secret VERCEL_DEPLOY_HOOK.
+#
+# Run it manually from the Actions tab with "force" ticked to rebuild now.
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Rebuild even if nothing new was published"
+        type: boolean
+        default: false
+
+concurrency:
+  group: substack-rebuild
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUBSTACK_BASE: https://darrylmunro.substack.com
+      # Slightly longer than the schedule interval, so a late-running job
+      # doesn't miss a post. A duplicate rebuild is harmless.
+      LOOKBACK_MINUTES: "75"
+    steps:
+      - name: Look for new Substack posts
+        id: check
+        run: |
+          set -euo pipefail
+          since=$(date -u -d "-${LOOKBACK_MINUTES} minutes" +%s)
+          posts=$(curl -fsS --retry 3 --max-time 30 \
+            "${SUBSTACK_BASE}/api/v1/archive?sort=new&offset=0&limit=10")
+          # Same audiences the site lists (see src/utils/getSubstackPosts.ts).
+          new=$(echo "$posts" | jq -r --argjson since "$since" '
+            [ .[]
+              | select(.audience == "everyone" or .audience == "only_paid")
+              | select((.post_date | sub("\\.[0-9]+"; "") | fromdateiso8601) >= $since)
+              | .title ] | .[]')
+          if [ -n "$new" ]; then
+            echo "New posts since the last check:"
+            echo "$new"
+            echo "rebuild=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No new posts in the last ${LOOKBACK_MINUTES} minutes."
+            echo "rebuild=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Vercel rebuild
+        if: steps.check.outputs.rebuild == 'true' || inputs.force
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_DEPLOY_HOOK}" ]; then
+            echo "::error::Repository secret VERCEL_DEPLOY_HOOK is not set."
+            exit 1
+          fi
+          curl -fsS --retry 3 --max-time 30 -X POST "${VERCEL_DEPLOY_HOOK}" > /dev/null
+          echo "Vercel rebuild triggered."

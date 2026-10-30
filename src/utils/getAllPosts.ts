@@ -1,5 +1,5 @@
 // ── BLENDED POST LIST ─────────────────────────────────────────
-// Merges local blog posts with Substack RSS posts into a single
+// Merges local blog posts with Substack archive posts into a single
 // chronologically sorted list.
 
 import type { CollectionEntry } from "astro:content";
@@ -15,6 +15,7 @@ export interface UnifiedPost {
   pubDatetime: Date;
   heroImage?: string;
   source: "local" | "substack";
+  paid: boolean;
 }
 
 function localToUnified(post: CollectionEntry<"blog">): UnifiedPost {
@@ -25,6 +26,7 @@ function localToUnified(post: CollectionEntry<"blog">): UnifiedPost {
     pubDatetime: new Date(post.data.pubDatetime),
     heroImage: post.data.heroImage,
     source: "local",
+    paid: false,
   };
 }
 
@@ -36,6 +38,7 @@ function substackToUnified(post: SubstackPost): UnifiedPost {
     pubDatetime: post.pubDatetime,
     heroImage: post.heroImage,
     source: "substack",
+    paid: post.paid,
   };
 }
 
